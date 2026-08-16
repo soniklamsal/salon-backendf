@@ -1,0 +1,67 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Database
+*.sqlite3
+*.db
+
+# Media and uploads
+media/
+private-media/
+
+# Static files
+staticfiles/
+static_root/
+
+# Backups
+backups/
+
+# Logs
+*.log
+logs/
+
+# Local documentation notes, kept out of the repo
+mdfile/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Build
+*.egg-info/
+dist/
+build/
+# Deployment archives built for upload
+*.zip
+
+# Database dumps and fixtures.
+# `salon_data_backup.json` was tracked and contained real customer bookings,
+# a contact message, auth.User rows including the admin password hash, and
+# session records. Nothing produced by `dumpdata` against a live database
+# belongs in the repository -- use `manage.py backup`, which writes to
+# `backups/` (already ignored above).
+salon_data_backup.json
+*_data_backup.json
+*_backup.json
+dumpdata*.json

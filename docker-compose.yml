@@ -1,0 +1,53 @@
+# Local development database.
+#
+# Exists so local work does not depend on the XAMPP MariaDB, which ships 10.4 —
+# a version Django refuses from 5.2 onwards, and the reason requirements.txt
+# pins Django below 5.1. MySQL 8 here removes that constraint locally and is a
+# closer match to what a cPanel host is likely to run.
+#
+# Published on 3307, not 3306, so it can run alongside XAMPP without the two
+# fighting over the port. Point DATABASE_URL at 3307 to use this one:
+#
+#   DATABASE_URL=mysql://root:salon@127.0.0.1:3307/salon_db
+#
+# Bring it up with:  docker compose up -d
+# Stop it with:      docker compose down          (data survives)
+# Erase it with:     docker compose down -v       (data is destroyed)
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: salon-mysql
+    restart: unless-stopped
+    ports:
+      # host:container. Only 3307 is exposed to Windows; inside the container
+      # MySQL still listens on its usual 3306.
+      - "127.0.0.1:3307:3306"
+    environment:
+      # Local development credentials. This database is bound to 127.0.0.1 and
+      # is never reachable from outside this machine, so the weak password is
+      # deliberate — it is not a secret and must not be reused in production.
+      MYSQL_ROOT_PASSWORD: salon
+      # Created on first start, so there is no CREATE DATABASE step by hand.
+      MYSQL_DATABASE: salon_db
+    command:
+      # The site content is Nepali-facing and the seed data contains em dashes
+      # and other non-ASCII punctuation. utf8mb4 is what settings.py asks the
+      # driver for; setting it server-side too avoids a mismatch on the wire.
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      # Named volume rather than a bind mount: MySQL's data directory does not
+      # behave well on a Windows filesystem mounted into Linux.
+      - salon-mysql-data:/var/lib/mysql
+    healthcheck:
+      # `docker compose up --wait` blocks on this, so migrations never run
+      # against a server that is still initialising.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-psalon"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  salon-mysql-data:

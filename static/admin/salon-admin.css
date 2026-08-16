@@ -1,0 +1,893 @@
+/*
+ * Admin skin — the CMS wearing the same design system as the site.
+ *
+ * The dark palette is lifted verbatim from
+ * salon-frontend/app/globals.css, so the admin and the page it edits are
+ * the same near-black surface with the same lime accent:
+ *
+ *   background #0a0a0a   elevated #121212   card #101010   popover #141414
+ *   accent / primary #c7ff3d   on-accent #0a0a0a
+ *   foreground #ffffff   muted #a1a1a1   destructive #f87171
+ *
+ * The site itself is dark-only, so the light palette below has no
+ * counterpart to copy: it is derived here, warm-neutral rather than pure
+ * grey, keeping the same lime for FILLS. What it cannot keep is lime as a
+ * text colour — #c7ff3d on white is about 1.4:1 — so a second token,
+ * `--salon-accent-text`, carries a darkened lime for anything that has to
+ * be read rather than merely seen. Both themes define both, and every
+ * rule below picks the right one for the job.
+ *
+ * Structure
+ * ---------
+ *   1. tokens for light, then dark, then the sidebar's fixed set
+ *   2. one mapping of Bootstrap's `--bs-*` onto those tokens
+ *   3. component rules, all in terms of tokens
+ *
+ * Jazzmin 3 is Bootstrap 5 + AdminLTE 4, so step 2 does most of the work:
+ * every card, table, form control, dropdown, modal and alert reads the
+ * `--bs-*` variables, so one block recolours the lot in both themes and
+ * anything Jazzmin adds later inherits it for free.
+ *
+ * Which theme is live is decided by `data-bs-theme` on <html>. Jazzmin's
+ * inline head script always resolves it to a literal "light" or "dark"
+ * (following the OS when the stored preference is "auto"), so no
+ * `prefers-color-scheme` media query is needed here — the attribute is
+ * the single source of truth, and admin/theme-toggle.js flips it.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap");
+
+/* --- 1. Tokens ---------------------------------------------------------- */
+
+:root,
+[data-bs-theme="light"] {
+  --salon-bg: #f4f3f0;
+  --salon-elevated: #ffffff;
+  --salon-card: #ffffff;
+  --salon-popover: #ffffff;
+  --salon-secondary: #eceae5;
+  --salon-fg: #16150f;
+  --salon-muted: #6b6862;
+  --salon-accent: #c7ff3d;
+  /* Lime dark enough to read as text on a white surface (~7:1). */
+  --salon-accent-text: #4f6b00;
+  --salon-on-accent: #0a0a0a;
+  --salon-destructive: #c2410c;
+  --salon-link: #1c1b16;
+  /*
+   * Bootstrap 5.3 paints links and several utilities through
+   * `rgba(var(--*-rgb), opacity)` rather than the plain colour, so every
+   * token that feeds one of those needs its triplet declared alongside it.
+   * A hex with no matching triplet silently leaves Bootstrap's own default
+   * in play — which is how links came out stock blue on a first pass.
+   */
+  --salon-fg-rgb: 22, 21, 15;
+  --salon-bg-rgb: 244, 243, 240;
+  --salon-link-rgb: 28, 27, 22;
+  --salon-accent-text-rgb: 79, 107, 0;
+  --salon-destructive-rgb: 194, 65, 12;
+  --salon-border: rgba(22, 21, 15, 0.12);
+  --salon-input: rgba(22, 21, 15, 0.18);
+  --salon-hover-bg: rgba(22, 21, 15, 0.05);
+  --salon-accent-wash: rgba(150, 199, 0, 0.14);
+  --salon-ring: rgba(120, 160, 0, 0.3);
+  --salon-stripe: rgba(22, 21, 15, 0.025);
+  --salon-shadow: 0 1px 2px rgba(22, 21, 15, 0.06);
+
+  --salon-font: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --salon-display: "Oswald", "Impact", sans-serif;
+}
+
+[data-bs-theme="dark"] {
+  --salon-bg: #0a0a0a;
+  --salon-elevated: #121212;
+  --salon-card: #101010;
+  --salon-popover: #141414;
+  --salon-secondary: #1c1c1c;
+  --salon-fg: #ffffff;
+  --salon-muted: #a1a1a1;
+  --salon-accent: #c7ff3d;
+  --salon-accent-text: #c7ff3d;
+  --salon-on-accent: #0a0a0a;
+  --salon-destructive: #f87171;
+  --salon-link: #e8e8e8;
+  --salon-fg-rgb: 255, 255, 255;
+  --salon-bg-rgb: 10, 10, 10;
+  --salon-link-rgb: 232, 232, 232;
+  --salon-accent-text-rgb: 199, 255, 61;
+  --salon-destructive-rgb: 248, 113, 113;
+  --salon-border: rgba(255, 255, 255, 0.14);
+  --salon-input: rgba(255, 255, 255, 0.18);
+  --salon-hover-bg: rgba(255, 255, 255, 0.06);
+  --salon-accent-wash: rgba(199, 255, 61, 0.12);
+  --salon-ring: rgba(199, 255, 61, 0.25);
+  --salon-stripe: rgba(255, 255, 255, 0.03);
+  --salon-shadow: none;
+}
+
+/*
+ * The sidebar does not follow the mode. It is the one piece of chrome that
+ * carries the brand, the template pins `data-bs-theme="dark"` on it, and a
+ * dark rail beside a light workspace is the arrangement most admin UIs
+ * settle on — so its tokens are fixed and declared once, outside the two
+ * palettes above.
+ */
+:root {
+  --salon-side-bg: #0a0a0a;
+  --salon-side-elevated: #161616;
+  --salon-side-fg: #ffffff;
+  --salon-side-border: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 2. Bootstrap mapping ----------------------------------------------- */
+
+/*
+ * Declared after both palettes so the token values are whichever theme
+ * won on <html>; these only translate them into the names Bootstrap and
+ * AdminLTE already read.
+ */
+:root {
+  --bs-body-bg: var(--salon-bg);
+  --bs-body-bg-rgb: var(--salon-bg-rgb);
+  --bs-body-color: var(--salon-fg);
+  --bs-body-color-rgb: var(--salon-fg-rgb);
+  --bs-emphasis-color: var(--salon-fg);
+  --bs-emphasis-color-rgb: var(--salon-fg-rgb);
+  --bs-secondary-color: var(--salon-muted);
+  --bs-secondary-bg: var(--salon-secondary);
+  --bs-tertiary-color: var(--salon-muted);
+  --bs-tertiary-bg: var(--salon-elevated);
+  --bs-heading-color: var(--salon-fg);
+
+  --bs-border-color: var(--salon-border);
+  --bs-border-color-translucent: var(--salon-border);
+
+  /*
+   * Links are near-neutral and only go accent on hover, which is the
+   * opposite of the obvious choice and deliberate: a changelist is a page
+   * made almost entirely of links, and painting them all in the accent
+   * turns every row into a wall of colour with nothing standing out. The
+   * accent is kept for things that are actions or state — buttons, the
+   * active menu row, badges — so it still means something when it appears.
+   */
+  --bs-link-color: var(--salon-link);
+  --bs-link-color-rgb: var(--salon-link-rgb);
+  --bs-link-hover-color: var(--salon-accent-text);
+  --bs-link-hover-color-rgb: var(--salon-accent-text-rgb);
+
+  --bs-primary: var(--salon-accent);
+  --bs-primary-rgb: 199, 255, 61;
+  --bs-danger: var(--salon-destructive);
+  --bs-danger-rgb: var(--salon-destructive-rgb);
+
+  --bs-font-sans-serif: var(--salon-font);
+  --bs-highlight-bg: var(--salon-accent-wash);
+}
+
+body,
+.wrapper,
+.app-wrapper,
+.app-main,
+.content-wrapper {
+  background-color: var(--salon-bg) !important;
+  color: var(--salon-fg);
+  font-family: var(--salon-font);
+}
+
+/* Oswald is the site's display face; used here for page and card titles
+   only, never for form labels or table text, which stay in Jost so long
+   field names remain readable at small sizes. */
+h1,
+h2,
+h3,
+.content-header h1,
+.card-title {
+  font-family: var(--salon-display);
+  letter-spacing: 0.01em;
+}
+
+/* --- 3a. Sidebar --------------------------------------------------------
+ *
+ * AdminLTE 4 drives every sidebar state from `--lte-sidebar-*` custom
+ * properties, so the hover/active/header colours are set there rather than
+ * fought with `!important` on each `.nav-link` — the framework keeps
+ * owning the behaviour and only the palette is ours.
+ *
+ * Width is nudged past the stock 250px because this menu carries the
+ * section names ("Motivation lines", "Contact columns") and at 250 the
+ * longest of them wrap onto a second line.
+ * ---------------------------------------------------------------------- */
+
+.app-sidebar {
+  --lte-sidebar-width: 268px;
+  --lte-sidebar-color: rgba(255, 255, 255, 0.68);
+  --lte-sidebar-hover-color: #ffffff;
+  --lte-sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --lte-sidebar-active-color: #c7ff3d;
+  --lte-sidebar-menu-active-color: #c7ff3d;
+  --lte-sidebar-menu-active-bg: rgba(199, 255, 61, 0.12);
+  --lte-sidebar-header-color: rgba(255, 255, 255, 0.38);
+  --lte-sidebar-submenu-color: rgba(255, 255, 255, 0.6);
+  --lte-sidebar-submenu-hover-color: #ffffff;
+  --lte-sidebar-submenu-hover-bg: rgba(255, 255, 255, 0.06);
+  --lte-sidebar-submenu-active-color: #c7ff3d;
+  --lte-sidebar-submenu-active-bg: rgba(199, 255, 61, 0.12);
+
+  background-color: var(--salon-side-bg) !important;
+  border-right: 1px solid var(--salon-side-border);
+  box-shadow: none !important;
+}
+
+.app-sidebar .sidebar-wrapper {
+  background-color: transparent !important;
+}
+
+/* Brand ---------------------------------------------------------------- */
+
+.app-sidebar .sidebar-brand {
+  background-color: var(--salon-side-bg) !important;
+  border-bottom: 1px solid var(--salon-side-border);
+  padding: 0;
+}
+
+.app-sidebar .brand-link {
+  display: flex;
+  align-items: center;
+  /* 3.5rem + the 1px border on `.sidebar-brand` — the exact height AdminLTE
+     subtracts from the viewport for `.sidebar-wrapper`. Anything taller and
+     the menu's last item scrolls under the fold. */
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+  border-bottom: 0;
+  color: var(--salon-side-fg);
+  transition: color 0.2s ease;
+}
+
+.app-sidebar .brand-link:hover {
+  color: #c7ff3d;
+}
+
+.app-sidebar .brand-text {
+  font-family: var(--salon-display);
+  font-size: 1.05rem;
+  font-weight: 600 !important; /* the template hard-codes .fw-light */
+  letter-spacing: 5.04px; /* the site wordmark's Figma tracking */
+  text-transform: uppercase;
+}
+
+/* The site marks its brand with lime; a dot does it here without turning
+   the whole wordmark into an accent colour. */
+.app-sidebar .brand-link::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: #c7ff3d;
+  box-shadow: 0 0 12px rgba(199, 255, 61, 0.6);
+  flex: none;
+}
+
+/* User panel ------------------------------------------------------------ */
+
+/* Jazzmin ships this as a bare row with a hairline under it. Given a
+   surface of its own it reads as "who you are signed in as" rather than as
+   the first item of the menu. */
+.app-sidebar .user-panel {
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.85rem 0.85rem 0.35rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--salon-side-border);
+  border-bottom: 1px solid var(--salon-side-border);
+  border-radius: 10px;
+  background: var(--salon-side-elevated);
+}
+
+.app-sidebar .user-panel .image {
+  display: flex;
+  align-items: center;
+}
+
+.app-sidebar .user-panel .user-profile {
+  font-size: 1.75rem;
+  color: #c7ff3d;
+}
+
+.app-sidebar .user-panel .info {
+  padding-left: 0;
+  min-width: 0;
+}
+
+.app-sidebar .user-panel .info a,
+.app-sidebar .user-panel .info span {
+  color: var(--salon-side-fg);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  opacity: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sidebar .user-panel .info a:hover {
+  color: #c7ff3d;
+}
+
+/* Menu ------------------------------------------------------------------ */
+
+.app-sidebar .sidebar-menu {
+  padding: 0.35rem 0.65rem 1.5rem;
+}
+
+.app-sidebar .nav-link {
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-sidebar .nav-icon {
+  width: 1.35rem;
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* The open page: a lime wash and a lime rule down its left edge, rather
+   than a solid lime block. The menu is long and always has exactly one
+   active row — a filled chip at that size fights the content area for
+   attention, while the rule still reads at a glance. */
+.app-sidebar .sidebar-menu > .nav-item > .nav-link.active,
+.app-sidebar .nav-link.active {
+  position: relative;
+  font-weight: 500;
+  box-shadow: inset 3px 0 0 #c7ff3d;
+}
+
+.app-sidebar .nav-link.active .nav-icon {
+  opacity: 1;
+}
+
+/* The page-order grouping only reads as groups if the headers stand out. */
+.app-sidebar .nav-header {
+  margin-top: 1.1rem;
+  padding: 0 0.75rem 0.35rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Treeview (used when `navigation_expanded` is off) */
+.app-sidebar .nav-treeview {
+  margin-left: 0.5rem;
+  border-left: 1px solid var(--salon-side-border);
+}
+
+.app-sidebar .nav-arrow {
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.app-sidebar .sidebar-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 3b. Header --------------------------------------------------------- */
+
+.app-header,
+.main-header,
+.navbar {
+  background-color: var(--salon-elevated) !important;
+  border-bottom: 1px solid var(--salon-border) !important;
+  box-shadow: none !important;
+  min-height: calc(3.5rem + 1px); /* matches the sidebar brand, rule to rule */
+}
+
+.app-header .navbar-nav .nav-link,
+.navbar .nav-link,
+.app-header .navbar-brand {
+  color: var(--salon-fg) !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-header .navbar-nav .nav-link:hover,
+.navbar .nav-link:hover {
+  color: var(--salon-accent-text) !important;
+  background-color: var(--salon-accent-wash);
+}
+
+/* The right-hand cluster is icons only (theme, user, docs). Square targets
+   keep them on the same rhythm as each other instead of inheriting the
+   text links' wider padding. */
+.app-header .navbar-nav.ms-auto .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+/* Search ---------------------------------------------------------------- */
+
+/* Jazzmin renders one search form per `search_model`; three sit side by
+   side here, so they are kept narrow and only widen on focus. */
+.app-header .input-group .form-control-navbar {
+  background-color: var(--salon-bg);
+  border: 1px solid var(--salon-border);
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  color: var(--salon-fg);
+  min-width: 150px;
+  transition: min-width 0.2s ease, border-color 0.2s ease;
+}
+
+.app-header .input-group .form-control-navbar:focus {
+  min-width: 220px;
+  border-color: var(--salon-accent-text);
+  box-shadow: none;
+}
+
+.app-header .input-group .form-control-navbar::placeholder {
+  color: var(--salon-muted);
+}
+
+.app-header .btn-navbar {
+  background-color: var(--salon-bg);
+  border: 1px solid var(--salon-border);
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--salon-muted);
+}
+
+.app-header .btn-navbar:hover {
+  color: var(--salon-accent-text);
+  background-color: var(--salon-bg);
+}
+
+/* The dropdown headers in the user menu are labels, not items. */
+.app-header .dropdown-header {
+  color: var(--salon-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.app-header .dropdown-item {
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Logging out is a <button> inside a form, so it misses the padding the
+   sibling <a>s get from `.dropdown-item` alone. */
+.app-header #logout-form .dropdown-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+}
+
+.app-header .dropdown-divider {
+  border-color: var(--salon-border);
+}
+
+/* Theme toggle (admin/theme-toggle.js) ---------------------------------- */
+
+/* Only one of the two icons is ever shown; which one is decided by the
+   live theme rather than by the script, so the button cannot fall out of
+   step with the page it is describing. */
+.salon-theme-toggle .salon-theme-icon-dark {
+  display: none;
+}
+
+[data-bs-theme="dark"] .salon-theme-toggle .salon-theme-icon-dark {
+  display: inline-block;
+}
+
+[data-bs-theme="dark"] .salon-theme-toggle .salon-theme-icon-light {
+  display: none;
+}
+
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .app-header .input-group .form-control-navbar {
+    min-width: 120px;
+  }
+}
+
+/* --- 3c. Page chrome (title row, breadcrumbs, footer) ------------------- */
+
+.app-content-header {
+  padding-top: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.app-content-header h3 {
+  font-family: var(--salon-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Breadcrumbs are orientation, not navigation you are meant to be drawn
+   to: muted trail, full-contrast for where you actually are. */
+.breadcrumb {
+  background: transparent;
+  margin-bottom: 0;
+  font-size: 0.85rem;
+}
+
+.breadcrumb-item a {
+  color: var(--salon-muted);
+}
+
+.breadcrumb-item a:hover {
+  color: var(--salon-accent-text);
+}
+
+.breadcrumb-item.active {
+  color: var(--salon-fg);
+}
+
+.app-footer,
+.main-footer {
+  background-color: var(--salon-elevated) !important;
+  border-top: 1px solid var(--salon-border) !important;
+  color: var(--salon-muted);
+  font-size: 0.85rem;
+}
+
+.app-footer a,
+.main-footer a {
+  color: var(--salon-muted);
+}
+
+.app-footer a:hover,
+.main-footer a:hover {
+  color: var(--salon-accent-text);
+}
+
+/* The object link is the one link in a changelist row worth weighting —
+   everything else in the row is data, not a destination. */
+#result_list th a,
+#result_list .field-__str__ a {
+  font-weight: 500;
+}
+
+/* --- 3d. Surfaces ------------------------------------------------------- */
+
+.card,
+.callout,
+.inline-group,
+.modal-content {
+  background-color: var(--salon-card);
+  border: 1px solid var(--salon-border);
+  border-radius: 12px;
+  color: var(--salon-fg);
+  box-shadow: var(--salon-shadow);
+}
+
+.card-header,
+.modal-header,
+.modal-footer {
+  background-color: var(--salon-elevated);
+  border-color: var(--salon-border);
+  color: var(--salon-fg);
+}
+
+/* Jazzmin marks the primary card with a coloured rule at the top; the
+   site's equivalent emphasis is the lime, so it is reused here instead of
+   Bootstrap's blue. */
+.card-primary:not(.card-outline) > .card-header,
+.card-warning:not(.card-outline) > .card-header {
+  background-color: var(--salon-elevated);
+  border-top: 3px solid var(--salon-accent);
+  color: var(--salon-fg);
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--salon-popover);
+  --bs-dropdown-color: var(--salon-fg);
+  --bs-dropdown-border-color: var(--salon-border);
+  --bs-dropdown-link-color: var(--salon-fg);
+  --bs-dropdown-link-hover-bg: var(--salon-accent-wash);
+  --bs-dropdown-link-hover-color: var(--salon-accent-text);
+  --bs-dropdown-link-active-bg: var(--salon-accent);
+  --bs-dropdown-link-active-color: var(--salon-on-accent);
+  border-radius: 10px;
+}
+
+/* --- 3e. Tables (changelists) ------------------------------------------- */
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--salon-fg);
+  --bs-table-border-color: var(--salon-border);
+  --bs-table-striped-bg: var(--salon-stripe);
+  --bs-table-striped-color: var(--salon-fg);
+  --bs-table-hover-bg: var(--salon-accent-wash);
+  --bs-table-hover-color: var(--salon-fg);
+}
+
+.table thead th,
+#result_list thead th {
+  background-color: var(--salon-elevated);
+  color: var(--salon-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--salon-border);
+}
+
+.table thead th a,
+#result_list thead th a {
+  color: var(--salon-muted);
+}
+
+/* Django's own row-selected class, which Bootstrap knows nothing about. */
+#result_list tr.selected > td {
+  background-color: var(--salon-accent-wash);
+}
+
+/* --- 3f. Forms ---------------------------------------------------------- */
+
+.form-control,
+.form-select,
+.vTextField,
+textarea,
+select {
+  background-color: var(--salon-elevated);
+  border: 1px solid var(--salon-input);
+  color: var(--salon-fg);
+  border-radius: 8px;
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus,
+select:focus {
+  background-color: var(--salon-elevated);
+  color: var(--salon-fg);
+  border-color: var(--salon-accent-text);
+  /* The site's `--ring`, as a focus halo rather than Bootstrap's blue. */
+  box-shadow: 0 0 0 3px var(--salon-ring);
+}
+
+.form-control::placeholder {
+  color: var(--salon-muted);
+}
+
+label,
+.form-label,
+.form-check-label {
+  color: var(--salon-fg);
+  font-weight: 500;
+}
+
+.help,
+.help-block,
+.form-text,
+.text-muted {
+  color: var(--salon-muted) !important;
+}
+
+/* Checkboxes and radios ship blue; the accent is the only "on" colour the
+   site uses. The tick itself stays dark, which is what makes a lime box
+   legible in either theme. */
+.form-check-input:checked {
+  background-color: var(--salon-accent);
+  border-color: var(--salon-accent);
+}
+
+.form-check-input:focus {
+  border-color: var(--salon-accent-text);
+  box-shadow: 0 0 0 3px var(--salon-ring);
+}
+
+.form-row,
+.module,
+fieldset.module {
+  background-color: transparent;
+  border-color: var(--salon-border);
+}
+
+/* --- 3g. Buttons -------------------------------------------------------- */
+
+/* `warning` is included because Jazzmin's save row uses it for the
+   secondary saves, and a stock amber next to the lime looks accidental.
+   These stay lime-filled in both themes: the fill is what carries the
+   brand, and near-black text on lime is readable on any background. */
+.btn-primary,
+.btn-warning,
+.btn-success,
+input[type="submit"],
+.submit-row input[type="submit"] {
+  --bs-btn-bg: var(--salon-accent);
+  --bs-btn-border-color: var(--salon-accent);
+  --bs-btn-color: var(--salon-on-accent);
+  --bs-btn-hover-bg: #b8f21f;
+  --bs-btn-hover-border-color: #b8f21f;
+  --bs-btn-hover-color: var(--salon-on-accent);
+  --bs-btn-active-bg: #a9e015;
+  --bs-btn-active-border-color: #a9e015;
+  --bs-btn-active-color: var(--salon-on-accent);
+  --bs-btn-disabled-bg: var(--salon-accent);
+  --bs-btn-disabled-border-color: var(--salon-accent);
+  --bs-btn-disabled-color: var(--salon-on-accent);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.btn-secondary,
+.btn-info,
+.btn-default {
+  --bs-btn-bg: var(--salon-secondary);
+  --bs-btn-border-color: var(--salon-border);
+  --bs-btn-color: var(--salon-fg);
+  --bs-btn-hover-bg: var(--salon-hover-bg);
+  --bs-btn-hover-border-color: var(--salon-input);
+  --bs-btn-hover-color: var(--salon-fg);
+  border-radius: 8px;
+}
+
+.btn-danger,
+.deletelink {
+  --bs-btn-bg: var(--salon-destructive);
+  --bs-btn-border-color: var(--salon-destructive);
+  --bs-btn-color: #ffffff;
+  --bs-btn-hover-bg: var(--salon-destructive);
+  --bs-btn-hover-border-color: var(--salon-destructive);
+  --bs-btn-hover-color: #ffffff;
+  border-radius: 8px;
+  filter: none;
+}
+
+.btn-danger:hover,
+.deletelink:hover {
+  filter: brightness(1.1);
+}
+
+/* --- 3h. Alerts, badges, pagination ------------------------------------- */
+
+.alert-success,
+.alert-info {
+  background-color: var(--salon-accent-wash);
+  border-color: var(--salon-accent-text);
+  color: var(--salon-accent-text);
+}
+
+.alert-danger {
+  background-color: color-mix(in srgb, var(--salon-destructive) 14%, transparent);
+  border-color: var(--salon-destructive);
+  color: var(--salon-destructive);
+}
+
+.badge.bg-primary,
+.badge.bg-warning,
+.badge.bg-success {
+  background-color: var(--salon-accent) !important;
+  color: var(--salon-on-accent) !important;
+}
+
+.page-link {
+  background-color: var(--salon-elevated);
+  border-color: var(--salon-border);
+  color: var(--salon-fg);
+}
+
+.page-item.active .page-link {
+  background-color: var(--salon-accent);
+  border-color: var(--salon-accent);
+  color: var(--salon-on-accent);
+}
+
+/* --- 3i. Login page ----------------------------------------------------- */
+
+/* The login card is the one screen an editor sees before anything else, so
+   it gets the site's centred treatment rather than a grey wash. */
+.login-page,
+.register-page,
+body.login {
+  background-color: var(--salon-bg) !important;
+}
+
+.login-box .card,
+.login-card-body {
+  background-color: var(--salon-card);
+  border: 1px solid var(--salon-border);
+  border-radius: 14px;
+}
+
+.login-logo a,
+.login-box-msg {
+  color: var(--salon-accent-text);
+  font-family: var(--salon-display);
+  letter-spacing: 4px;
+}
+
+/* --- 3j. Colour widget (common/admin.py + admin/color-widget.js) -------- */
+
+/* The picker paints its own swatch, so the `.form-control` fill above
+   would only show as a frame around it — given a fixed size and stripped
+   padding instead, so the swatch fills the control. */
+.salon-color input[type="color"] {
+  width: 44px;
+  height: 34px;
+  padding: 2px;
+  background-color: var(--salon-elevated);
+  border: 1px solid var(--salon-input);
+  border-radius: 8px;
+  vertical-align: middle;
+}
+
+.salon-color input[type="text"] {
+  display: inline-block;
+  width: auto;
+  min-width: 9rem;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-family: ui-monospace, "SFMono-Regular", "Consolas", monospace;
+}
+
+/* --- 3k. Image previews (common/admin.py ImagePreviewMixin) ------------- */
+
+.salon-preview {
+  display: inline-block;
+  margin-right: 12px;
+}
+
+.salon-preview img {
+  max-height: 140px;
+  width: auto;
+  border-radius: 8px;
+  border: 1px solid var(--salon-border);
+  /* A mat behind the thumbnail: uploads are mostly photography shot on
+     white, and in dark mode their edges would otherwise vanish into the
+     surface. */
+  background: var(--salon-elevated);
+  padding: 4px;
+}
+
+.salon-preview--empty {
+  color: var(--salon-muted);
+  font-style: italic;
+}
+
+/* --- 3l. Scrollbars ----------------------------------------------------- */
+
+/* Matches the front end's treatment: the bar is present but recedes into
+   the surface instead of drawing a bright gutter down the page. */
+* {
+  scrollbar-color: var(--salon-input) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--salon-input);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--salon-accent-text);
+}

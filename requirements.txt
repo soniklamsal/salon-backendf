@@ -1,0 +1,17 @@
+Django>=5.0,<5.1  # Downgraded for MariaDB 10.4 compatibility
+djangorestframework>=3.16,<3.17  # Pinned to the tested 3.16.x. Unbounded, pip backtracks to 3.17.x (3.18 needs Django 5.2), so prod would not match dev.
+django-jazzmin>=3.0.1
+django-cors-headers>=4.7
+Pillow>=11.0
+python-dotenv>=1.0
+whitenoise>=6.8
+PyJWT[crypto]>=2.9
+cloudinary>=1.44
+django-cloudinary-storage>=0.3
+# Database drivers - only one is needed depending on DATABASE_URL
+# PostgreSQL (recommended for production)
+psycopg[binary]>=3.2
+# MySQL (for cPanel deployments)
+mysqlclient>=2.2.0
+# Requests for Clerk API calls
+requests>=2.32

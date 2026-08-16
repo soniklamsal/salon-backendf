@@ -1,0 +1,255 @@
+# ==============================================================================
+# Apache .htaccess for Django on cPanel
+# ==============================================================================
+# 
+# This file configures Apache to properly handle Django application routing
+# and static file serving when deployed on cPanel with Passenger.
+#
+# Place this file in your application root (same directory as passenger_wsgi.py)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Passenger Configuration
+# ------------------------------------------------------------------------------
+
+# Enable Passenger for this directory
+PassengerEnabled On
+
+# Set the Python version (adjust to match your cPanel Python App setting)
+# Example: If using Python 3.10, this should match the virtual environment
+PassengerPython /home/username/virtualenv/salon-backend/3.10/bin/python
+
+# Application root directory
+PassengerAppRoot /home/username/salon-backend
+
+# WSGI entry point (must match your startup file name)
+PassengerStartupFile passenger_wsgi.py
+
+# Application type
+PassengerAppType wsgi
+
+# Environment (production recommended)
+PassengerAppEnv production
+
+# Process management
+PassengerMinInstances 1
+PassengerMaxPoolSize 6
+PassengerPoolIdleTime 300
+
+# Restart the app if it fails
+PassengerMaxPreloaderIdleTime 0
+PassengerRestartDir /home/username/salon-backend
+
+# ------------------------------------------------------------------------------
+# Static Files Configuration
+# ------------------------------------------------------------------------------
+
+# Serve static files directly by Apache (bypass Django)
+# This significantly improves performance
+
+<IfModule mod_alias.c>
+    # Static files (CSS, JS, images collected by collectstatic)
+    Alias /static /home/username/salon-backend/staticfiles
+    
+    # Optional: Media files (if not using Cloudinary for everything)
+    # Alias /media /home/username/salon-backend/media
+</IfModule>
+
+# Allow access to static files directory
+<Directory /home/username/salon-backend/staticfiles>
+    Require all granted
+    Options -Indexes +FollowSymLinks
+    AllowOverride None
+    
+    # Cache static files for 1 year (they have unique hashes)
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresDefault "access plus 1 year"
+    </IfModule>
+    
+    # Compression for text-based files
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/css text/javascript application/javascript application/json text/html text/plain text/xml
+    </IfModule>
+</Directory>
+
+# Prevent access to private media directory
+<Directory /home/username/salon-backend/private-media>
+    Require all denied
+</Directory>
+
+# ------------------------------------------------------------------------------
+# Security Headers
+# ------------------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Clickjacking protection
+    Header always set X-Frame-Options "DENY"
+    
+    # XSS protection (legacy browsers)
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header always set Referrer-Policy "same-origin"
+    
+    # Content Security Policy (adjust as needed)
+    # Header always set Content-Security-Policy "default-src 'self'; img-src 'self' https://res.cloudinary.com data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# SSL/HTTPS Configuration
+# ------------------------------------------------------------------------------
+
+# Force HTTPS (only enable after SSL certificate is active)
+# Uncomment the following block once SSL is working:
+
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# HSTS - HTTP Strict Transport Security (only with HTTPS)
+# Uncomment after SSL is active and tested:
+
+# <IfModule mod_headers.c>
+#     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# </IfModule>
+
+# ------------------------------------------------------------------------------
+# URL Rewriting
+# ------------------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Don't rewrite if the file or directory exists
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Pass all other requests to Passenger/Django
+    RewriteRule ^.*$ passenger_wsgi.py [L]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# File Access Protection
+# ------------------------------------------------------------------------------
+
+# Prevent access to Python files
+<FilesMatch "\.(py|pyc|pyo|db|sqlite3|log)$">
+    Require all denied
+</FilesMatch>
+
+# Prevent access to .env and config files
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Prevent access to git files
+<FilesMatch "^\.git">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------------------
+# Error Pages (Optional)
+# ------------------------------------------------------------------------------
+
+# Custom error pages (create these files if desired)
+# ErrorDocument 404 /404.html
+# ErrorDocument 500 /500.html
+# ErrorDocument 503 /503.html
+
+# ------------------------------------------------------------------------------
+# MIME Types (Ensure common types are recognized)
+# ------------------------------------------------------------------------------
+
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType text/javascript .js
+    AddType application/json .json
+    AddType image/svg+xml .svg .svgz
+    AddType application/font-woff .woff
+    AddType application/font-woff2 .woff2
+    AddType image/webp .webp
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# Compression (Gzip)
+# ------------------------------------------------------------------------------
+
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, JSON, XML
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xml+rss
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# Cache Control
+# ------------------------------------------------------------------------------
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Default expiration
+    ExpiresDefault "access plus 1 month"
+    
+    # Specific file types
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType application/json "access plus 0 seconds"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# NOTES FOR CPANEL DEPLOYMENT
+# ------------------------------------------------------------------------------
+
+# IMPORTANT: Update these paths with your actual cPanel username and paths:
+# 
+# 1. Replace "username" with your actual cPanel username
+# 2. Replace "salon-backend" with your actual app directory name
+# 3. Replace Python version "3.10" with your actual Python version
+#
+# Example for user "johnsmith" with Python 3.11:
+#   PassengerPython /home/johnsmith/virtualenv/salon-backend/3.11/bin/python
+#   PassengerAppRoot /home/johnsmith/salon-backend
+#   Alias /static /home/johnsmith/salon-backend/staticfiles
+#
+# How to find your paths in cPanel:
+# 1. Go to Setup Python App in cPanel
+# 2. Click on your application
+# 3. Copy the paths shown in the configuration
+#
+# Testing:
+# 1. Upload this file to your app root
+# 2. Restart the application in cPanel
+# 3. Visit your domain - should see Django API or admin
+# 4. Check /static/admin/css/base.css - should load directly
+#
+# Troubleshooting:
+# - 500 error: Check cPanel error logs for Apache/Passenger errors
+# - Static files 404: Verify Alias paths and run collectstatic
+# - WSGI import error: Check PassengerPython path matches virtual env
+# - Permission denied: chmod 755 on directories, chmod 644 on files
+#
+# ==============================================================================

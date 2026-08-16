@@ -1,0 +1,647 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$720000$aA8BDZ0KZLBfFalBzYIRMM$l5cASDlNFUkd0a4EYWpTOYeoeHR7XB8B2kjT9lBfJDg=",
+    "last_login": "2026-08-14T17:05:22.104Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-14T16:47:42.900Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "core.sitesettings",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.701Z",
+    "updated_at": "2026-08-14T16:47:26.702Z",
+    "brand_name": "SALON",
+    "badge_caption": "We Don't Keep Our Beauty Secrets",
+    "meta_title": "Salon — Always Make Room for a Little Beauty in Your Life",
+    "meta_description": "Premium hair, beauty and spa treatments in Kathmandu, Nepal. Book an appointment or browse the service menu.",
+    "nav_cta_label": "Book Now",
+    "nav_cta_href": "/services",
+    "copyright_text": "2026 Salon All rights reserved"
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "label": "Home",
+    "href": "/",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "label": "About Us",
+    "href": "/about-us",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "label": "Service Menu",
+    "href": "/services",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "label": "Contact Us",
+    "href": "/contact",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.sociallink",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "platform": "facebook",
+    "url": "https://facebook.com",
+    "label": ""
+  }
+},
+{
+  "model": "core.sociallink",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "platform": "instagram",
+    "url": "https://instagram.com",
+    "label": ""
+  }
+},
+{
+  "model": "sections.herosection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.713Z",
+    "updated_at": "2026-08-14T16:47:26.713Z",
+    "eyebrow": "Welcome To Choppers",
+    "headline_line_1": "Best Hair Salon For A",
+    "headline_line_2": "Professional Look",
+    "body": "Choppers offers high performance customized facials to provide you with visible results.",
+    "primary_cta_label": "Book Now",
+    "primary_cta_href": "/services",
+    "secondary_cta_label": "All Services",
+    "secondary_cta_href": "/services",
+    "background_image": "",
+    "background_image_url": "",
+    "stylist_image": "",
+    "stylist_image_url": "/images/hero-stylist.png",
+    "stylist_image_alt": "A barber trimming the hair of a smiling client in a black cape",
+    "watermark_image": "",
+    "watermark_image_url": "/images/choppers-mark.png",
+    "background_color": "#0a0a0a",
+    "heading_color": "#ffffff",
+    "body_color": "#9a9a9a",
+    "eyebrow_color": "#fbb034",
+    "primary_button_bg": "#c7ff3d",
+    "primary_button_text": "#000000",
+    "secondary_button_color": "#c7ff3d"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "label": "Fresh Cut",
+    "icon": "hair",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269602/devis-gym/people/DSC07734.JPG.webp",
+    "href": "",
+    "description": "A full cut and finish, shaped to how you actually wear it.",
+    "price_from": "800.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "label": "Sharp Fade",
+    "icon": "hair",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269452/devis-gym/people/DSC07615-4.JPG.webp",
+    "href": "",
+    "description": "Skin, low or high — blended clean through the sides and back.",
+    "price_from": "900.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "label": "Beard Work",
+    "icon": "facial",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269591/devis-gym/people/DSC07629-3.JPG.webp",
+    "href": "",
+    "description": "Line-up, trim and hot-towel finish.",
+    "price_from": "500.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "label": "Wash & Style",
+    "icon": "skincare",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269637/devis-gym/people/DSC07636-3.JPG.webp",
+    "href": "",
+    "description": "Wash, condition and a blow-dry set for the day.",
+    "price_from": "600.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "label": "Colour Day",
+    "icon": "makeup",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786268875/devis-gym/people/DSC07385.JPG.webp",
+    "href": "",
+    "description": "Full colour or highlights, booked with time to do it properly.",
+    "price_from": "2500.00"
+  }
+},
+{
+  "model": "sections.whowearesection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.723Z",
+    "updated_at": "2026-08-14T16:47:26.723Z",
+    "heading_line_1": "WHO",
+    "heading_line_2": "WE ARE",
+    "lead": "A Kathmandu salon built on craft — every cut shaped to the person in the chair, not to a catalogue.",
+    "body": "Our stylists train year-round on cuts, colour and care, so the chair you sit in is the same standard every visit.",
+    "cta_label": "About us",
+    "cta_href": "/about-us",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.motivationsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.728Z",
+    "updated_at": "2026-08-14T16:47:26.728Z",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "text": "BEAUTY IS POWER"
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "text": "CONFIDENCE IS YOUR"
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "text": "BEST ACCESSORY"
+  }
+},
+{
+  "model": "sections.gallerysection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.733Z",
+    "updated_at": "2026-08-14T16:47:26.733Z",
+    "heading": "Our Speciality",
+    "body": "Capturing elegance and artistry,\nwitness the transformations that\ndefine our craft.",
+    "cta_label": "View Gallery",
+    "cta_href": "#",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/first.jpeg",
+    "alt": "Editorial fashion landing page"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/second.jpeg",
+    "alt": "Studio portfolio layout"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/third.jpeg",
+    "alt": "Brand identity showcase"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/fourth.jpeg",
+    "alt": "Product page concept"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/fifth.jpeg",
+    "alt": "Interface design study"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 6,
+  "fields": {
+    "order": 5,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/sixth.jpeg",
+    "alt": "Marketing site exploration"
+  }
+},
+{
+  "model": "sections.classessection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.738Z",
+    "updated_at": "2026-08-14T16:47:26.738Z",
+    "heading_top": "Moments Captured",
+    "heading_bottom": "In The Chair",
+    "marquee_phrase": "FRESH CUTS • SHARP FADES • CLEAN LINES • EVERY CHAIR • EVERY DAY • REAL MOMENTS"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "slug": "fresh-cut",
+    "name": "Fresh\nCut",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269602/devis-gym/people/DSC07734.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "slug": "sharp-fade",
+    "name": "Sharp\nFade",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269452/devis-gym/people/DSC07615-4.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "slug": "beard-work",
+    "name": "Beard\nWork",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269591/devis-gym/people/DSC07629-3.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "slug": "wash-style",
+    "name": "Wash &\nStyle",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269637/devis-gym/people/DSC07636-3.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "section": 1,
+    "slug": "colour-day",
+    "name": "Colour\nDay",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786268875/devis-gym/people/DSC07385.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 6,
+  "fields": {
+    "order": 5,
+    "is_published": true,
+    "section": 1,
+    "slug": "clean-lines",
+    "name": "Clean\nLines",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269241/devis-gym/people/DSC07541.JPG.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 7,
+  "fields": {
+    "order": 6,
+    "is_published": true,
+    "section": 1,
+    "slug": "finishing-touch",
+    "name": "Finishing\nTouch",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786268706/devis-gym/classes/OutdoorActivities.webp"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 8,
+  "fields": {
+    "order": 7,
+    "is_published": true,
+    "section": 1,
+    "slug": "book-your-seat",
+    "name": "Book\nYour Seat",
+    "href": "/services",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269681/devis-gym/people/DSC07643-3.JPG.webp"
+  }
+},
+{
+  "model": "sections.ourstorysection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.744Z",
+    "updated_at": "2026-08-14T16:47:26.744Z",
+    "heading": "Our Story",
+    "body": "We started as a small beauty salon in Kathmandu, Nepal. Our vision was to create a premium salon experience where beauty meets excellence. We believe in using only the finest products and techniques to help our clients look and feel their absolute best. Our team of expert stylists and beauty professionals are passionate about transforming your look and boosting your confidence with every visit.",
+    "cta_label": "Learn More",
+    "cta_href": "/about-us",
+    "image": "",
+    "image_url": "/images/salon-artist.webp",
+    "image_alt": "Stylist holding a set of makeup brushes"
+  }
+},
+{
+  "model": "sections.asseenonsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.749Z",
+    "updated_at": "2026-08-14T16:47:26.749Z",
+    "heading": "As seen On",
+    "quote": "The place with its constant excellence, soul, and style",
+    "attribution": "",
+    "cta_label": "Learn More",
+    "cta_href": "/about-us"
+  }
+},
+{
+  "model": "sections.followussection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.755Z",
+    "updated_at": "2026-08-14T16:47:26.755Z",
+    "heading": "Follow Us",
+    "body": "Don’t miss promotions, follow us for the latest news"
+  }
+},
+{
+  "model": "sections.contactcolumn",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "heading": "Contact",
+    "icon": "phone",
+    "body": "T: 070 9485 7568\ninfo@beautysalon.com"
+  }
+},
+{
+  "model": "sections.contactcolumn",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "heading": "Hours",
+    "icon": "clock",
+    "body": "Mon to Fri: 7:30 am — 1:00 am\nSat: 9:00 am — 1:00 am\nSun: 9:00 am — 11:30 pm"
+  }
+},
+{
+  "model": "sections.contactcolumn",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "heading": "Location",
+    "icon": "pin",
+    "body": "Thamel,\nKathmandu\nNepal"
+  }
+},
+{
+  "model": "sections.footersection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.761Z",
+    "updated_at": "2026-08-14T16:47:26.761Z",
+    "heading_line1": "TIME",
+    "heading_line2": "TO",
+    "heading_line3": "SHINE",
+    "contact_heading": "Contact Us",
+    "contact_body": "Don’t miss promotions, follow us for the latest news",
+    "email": "info@beautysalon.com",
+    "phone": "070 9485 7568",
+    "cta_label": "Book a seat",
+    "cta_href": "/services"
+  }
+},
+{
+  "model": "bookings.bookingsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.706Z",
+    "updated_at": "2026-08-14T16:47:26.706Z",
+    "page_heading": "Book your seat",
+    "page_intro": "Pick a service and a stylist, tell us when suits you, and we will confirm by phone.",
+    "service_heading": "Choose your service",
+    "barber_heading": "Choose your barber",
+    "details_heading": "Your details",
+    "payment_heading": "Pay with eSewa",
+    "service_step": "Service",
+    "barber_step": "Barber",
+    "details_step": "Details",
+    "payment_step": "Payment",
+    "submit_label": "Submit booking",
+    "success_heading": "Booking request sent",
+    "esewa_qr": "",
+    "esewa_note": "Scan with eSewa, pay, then upload your payment screenshot below.",
+    "deposit_percent": 100,
+    "opens_at": "09:00:00",
+    "closes_at": "19:00:00",
+    "slot_minutes": 30
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.934Z",
+    "updated_at": "2026-08-14T16:47:26.934Z",
+    "order": 0,
+    "is_published": true,
+    "name": "Aashish Shrestha",
+    "role": "Senior stylist",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 2,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.939Z",
+    "updated_at": "2026-08-14T16:47:26.939Z",
+    "order": 1,
+    "is_published": true,
+    "name": "Bina Gurung",
+    "role": "Colour specialist",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 3,
+  "fields": {
+    "created_at": "2026-08-14T16:47:26.952Z",
+    "updated_at": "2026-08-14T16:47:26.952Z",
+    "order": 2,
+    "is_published": true,
+    "name": "Kiran Tamang",
+    "role": "Barber",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+}
+]

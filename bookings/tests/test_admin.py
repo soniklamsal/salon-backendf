@@ -6,6 +6,7 @@ even though they are not endpoints.
 """
 
 import io
+import json
 import shutil
 import tempfile
 
@@ -507,3 +508,172 @@ class BarberAdminTests(TestCase):
             reverse("admin:bookings_barber_change", args=[barber.pk])
         )
         self.assertEqual(response.status_code, 200)
+
+
+@admin_static_storage
+class RowActionTests(TestCase):
+    """Approving one booking without reloading the page.
+
+    The bulk action is deliberately untouched and still covered above; these
+    only check that the row button is the *same* code reached a different way,
+    and that the ways it could be misused are closed.
+    """
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser("boss", "b@salon.test", "x" * 20)
+        self.client.force_login(self.staff)
+        self.booking = Appointment.objects.create(name="Asha")
+        self.url = reverse("admin:bookings_appointment_ajax_action")
+
+    def post(self, **body):
+        return self.client.post(
+            self.url, data=json.dumps(body), content_type="application/json"
+        )
+
+    def test_the_row_button_approves_and_issues_an_order_id(self):
+        response = self.post(action="approve_bookings", pk=self.booking.pk)
+        self.assertEqual(response.status_code, 200)
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, Appointment.Status.APPROVED)
+        self.assertTrue(self.booking.order_id.startswith("ORD-"))
+
+    def test_it_runs_the_same_code_as_the_bulk_action(self):
+        """Two ways of approving must not become two implementations."""
+        other = Appointment.objects.create(name="Ram")
+        self.post(action="approve_bookings", pk=self.booking.pk)
+        self.client.post(
+            reverse("admin:bookings_appointment_changelist"),
+            {"action": "approve_bookings", "_selected_action": [str(other.pk)]},
+            follow=True,
+        )
+        self.booking.refresh_from_db()
+        other.refresh_from_db()
+        self.assertEqual(self.booking.status, other.status)
+        self.assertTrue(self.booking.order_id)
+        self.assertTrue(other.order_id)
+
+    def test_the_action_message_comes_back_in_the_response(self):
+        """The action's own message_user output, drained for the page to show."""
+        body = self.post(action="approve_bookings", pk=self.booking.pk).json()
+        self.assertTrue(body["messages"])
+        self.assertIn("Approved", body["messages"][0]["text"])
+
+    def test_the_warning_about_a_missing_visit_time_still_reaches_the_screen(self):
+        """It is the whole reason the bulk action is reused rather than copied."""
+        body = self.post(action="approve_bookings", pk=self.booking.pk).json()
+        texts = " ".join(m["text"] for m in body["messages"])
+        self.assertIn("No visit time set", texts)
+
+    def test_the_response_re_renders_the_status_pill(self):
+        body = self.post(action="approve_bookings", pk=self.booking.pk).json()
+        self.assertIn("Approved", body["cells"]["state"])
+
+    def test_the_response_re_renders_the_buttons_so_the_row_catches_up(self):
+        """An approved row must offer "Mark done", not "Approve" again."""
+        body = self.post(action="approve_bookings", pk=self.booking.pk).json()
+        self.assertIn("complete_bookings", body["cells"]["row_actions"])
+
+    def test_approving_twice_keeps_one_order_id(self):
+        """A double click must not issue a second number."""
+        self.post(action="approve_bookings", pk=self.booking.pk)
+        self.booking.refresh_from_db()
+        first = self.booking.order_id
+        self.post(action="approve_bookings", pk=self.booking.pk)
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.order_id, first)
+
+    def test_delete_selected_cannot_be_run_from_a_row(self):
+        """It is registered on every ModelAdmin; the allowlist is what stops it."""
+        response = self.post(action="delete_selected", pk=self.booking.pk)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(Appointment.objects.filter(pk=self.booking.pk).exists())
+
+    def test_a_customer_supplied_name_is_escaped_in_the_response(self):
+        """These cells are assigned with innerHTML, and customers pick the name."""
+        self.booking.name = "<img src=x onerror=alert(1)>"
+        self.booking.save()
+        body = self.post(action="approve_bookings", pk=self.booking.pk).json()
+        blob = "".join(body["cells"].values()) + str(body["messages"])
+        self.assertNotIn("<img src=x", blob)
+
+    def test_a_get_changes_nothing(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, Appointment.Status.PENDING)
+
+    def test_a_signed_out_request_cannot_approve(self):
+        self.client.logout()
+        response = self.post(action="approve_bookings", pk=self.booking.pk)
+        self.assertEqual(response.status_code, 401)
+        self.booking.refresh_from_db()
+        self.assertEqual(self.booking.status, Appointment.Status.PENDING)
+
+
+@admin_static_storage
+class RowActionMarkupTests(TestCase):
+    """The button markup, which the JavaScript depends on and cannot fix."""
+
+    def setUp(self):
+        self.client.force_login(
+            User.objects.create_superuser("boss", "b@salon.test", "x" * 20)
+        )
+        self.booking = Appointment.objects.create(name="Asha")
+        self.url = reverse("admin:bookings_appointment_changelist")
+
+    def test_the_buttons_are_type_button(self):
+        """A bare <button> inside #changelist-form submits the whole changelist."""
+        self.assertContains(self.client.get(self.url), 'type="button"')
+
+    def test_the_buttons_render_disabled(self):
+        """With no JavaScript a live-looking button that does nothing is worse
+        than one that shows it is unavailable -- the bulk actions still work."""
+        body = self.client.get(self.url).content.decode()
+        self.assertIn('data-salon-action="approve_bookings"', body)
+        self.assertIn("disabled", body)
+
+    def test_the_row_carries_its_own_primary_key(self):
+        """So the script never infers identity from a link that list_display_links
+        may not have put there."""
+        self.assertContains(
+            self.client.get(self.url), 'data-salon-pk="{}"'.format(self.booking.pk)
+        )
+
+    def test_a_finished_booking_offers_no_button(self):
+        self.booking.status = Appointment.Status.COMPLETED
+        self.booking.save()
+        self.assertNotContains(self.client.get(self.url), "data-salon-action")
+
+    def test_the_changelist_still_marks_cells_with_field_classes(self):
+        """Django's `td.field-<name>` is the contract the cell swap relies on."""
+        self.assertContains(self.client.get(self.url), "field-state")
+
+
+class ContactToggleTests(TestCase):
+    """Marking an enquiry handled without re-POSTing the whole changelist."""
+
+    def setUp(self):
+        self.client.force_login(
+            User.objects.create_superuser("boss", "b@salon.test", "x" * 20)
+        )
+        self.message = ContactMessage.objects.create(
+            name="Asha", email="a@b.com", subject="Hours", message="When do you open?"
+        )
+        self.url = reverse("admin:bookings_contactmessage_ajax_toggle")
+
+    def test_marking_it_handled_saves(self):
+        response = self.client.post(
+            self.url,
+            data=json.dumps(
+                {"pk": self.message.pk, "field": "is_handled", "value": True}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.message.refresh_from_db()
+        self.assertTrue(self.message.is_handled)
+
+    def test_list_editable_is_kept_as_the_no_javascript_path(self):
+        from bookings.admin import ContactMessageAdmin
+
+        self.assertIn("is_handled", ContactMessageAdmin.list_editable)

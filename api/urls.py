@@ -11,7 +11,6 @@ router.register("barbers", views.BarberViewSet, basename="barber")
 router.register("classes", views.ClassCardViewSet, basename="classcard")
 router.register("nav-links", views.NavLinkViewSet, basename="navlink")
 router.register("social-links", views.SocialLinkViewSet, basename="sociallink")
-router.register("contact-columns", views.ContactColumnViewSet, basename="contactcolumn")
 
 urlpatterns = [
     path("", views.api_root, name="api-root"),

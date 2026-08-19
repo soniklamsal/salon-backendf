@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html, format_html_join
 
 from common.admin import ColorInput, ImagePreviewMixin, SingletonAdmin
+from common.admin_ajax import AdminAjaxMixin
 from sections.models import (
     AboutColumn,
     AboutColumnItem,
@@ -10,7 +11,6 @@ from sections.models import (
     AsSeenOnSection,
     ClassCard,
     ClassesSection,
-    ContactColumn,
     FollowUsSection,
     FooterSection,
     GalleryImage,
@@ -132,7 +132,7 @@ class HeroSectionAdmin(ImagePreviewMixin, SingletonAdmin):
 
 
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(AdminAjaxMixin, admin.ModelAdmin):
     """The real Service admin — registered, but hidden from the index.
 
     It has to stay registered: `AppointmentAdmin.autocomplete_fields` resolves
@@ -144,6 +144,11 @@ class ServiceAdmin(admin.ModelAdmin):
 
     def get_model_perms(self, request):
         return {}
+
+    # `list_editable` below is untouched: it is the path for anyone
+    # without JavaScript, and the AJAX write keeps the checkbox and the
+    # database in agreement, so a later "Save" is a no-op either way.
+    ajax_toggle_fields = ("is_published",)
 
     list_display = ("label", "icon", "price_from", "order", "is_published")
     list_editable = ("icon", "price_from", "order", "is_published")
@@ -220,7 +225,9 @@ class ClassesSectionAdmin(SingletonAdmin):
 
 
 @admin.register(ClassCard)
-class ClassCardAdmin(ImagePreviewMixin, admin.ModelAdmin):
+class ClassCardAdmin(AdminAjaxMixin, ImagePreviewMixin, admin.ModelAdmin):
+    ajax_toggle_fields = ("is_published",)
+
     list_display = ("__str__", "href", "order", "is_published")
     list_editable = ("href", "order", "is_published")
     list_filter = ("is_published",)
@@ -260,14 +267,6 @@ class AsSeenOnSectionAdmin(SingletonAdmin):
 @admin.register(FollowUsSection)
 class FollowUsSectionAdmin(SingletonAdmin):
     fields = ("heading", "body")
-
-
-@admin.register(ContactColumn)
-class ContactColumnAdmin(admin.ModelAdmin):
-    list_display = ("heading", "icon", "order", "is_published")
-    list_editable = ("icon", "order", "is_published")
-    ordering = ("order", "pk")
-    fields = ("heading", "icon", "body", ("order", "is_published"))
 
 
 @admin.register(FooterSection)
@@ -437,7 +436,9 @@ class AboutColumnItemInline(admin.TabularInline):
 
 
 @admin.register(AboutColumn)
-class AboutColumnAdmin(admin.ModelAdmin):
+class AboutColumnAdmin(AdminAjaxMixin, admin.ModelAdmin):
+    ajax_toggle_fields = ("is_published",)
+
     inlines = [AboutColumnItemInline]
     list_display = ("heading", "bullet_count", "order", "is_published")
     list_editable = ("order", "is_published")
@@ -449,7 +450,7 @@ class AboutColumnAdmin(admin.ModelAdmin):
 
 
 @admin.register(AboutColumnItem)
-class AboutColumnItemAdmin(admin.ModelAdmin):
+class AboutColumnItemAdmin(AdminAjaxMixin, admin.ModelAdmin):
     """Every bullet on the About page, in one editable list.
 
     The bullets are also reachable through their column, but only by knowing to
@@ -459,6 +460,8 @@ class AboutColumnItemAdmin(admin.ModelAdmin):
 
     # `column` leads so it is the link to the parent, which frees `text` to be
     # edited in place -- Django forbids list_editable on the linked column.
+    ajax_toggle_fields = ("is_published",)
+
     list_display = ("column", "text", "order", "is_published")
     list_display_links = ("column",)
     list_editable = ("text", "order", "is_published")

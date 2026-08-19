@@ -1,0 +1,46 @@
+{% extends "email/base.html" %}
+{% comment %}
+An enquiry landed. Shorter than a booking because there is less to it: who
+wrote in, and what they said. The message is the point, so it gets its own
+block rather than sharing a label column with everything else.
+{% endcomment %}
+
+{% block subject %}New enquiry: {{ message.subject|default:message.name }}{% endblock %}
+
+{% block preheader %}
+  {{ message.name }} sent an enquiry{% if message.subject %} about {{ message.subject }}{% endif %}.
+{% endblock %}
+
+{% block header_note %}New enquiry{% endblock %}
+{% block eyebrow %}Website enquiry{% endblock %}
+{% block heading %}{{ message.subject|default:"Enquiry" }}{% endblock %}
+
+{% block content %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    {% include "email/_row.html" with label="From" value=message.name accent=False %}
+    {% include "email/_row.html" with label="Email" value=message.email accent=False %}
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:6px 0 20px 0;">
+    <tr>
+      <td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border:1px solid #262626;border-radius:8px;padding:14px 16px;">
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;font-weight:600;letter-spacing:0.6px;color:#a6a6a6;text-transform:uppercase;padding-bottom:6px;">
+          Message
+        </div>
+        {% comment %}
+        linebreaksbr rather than linebreaks, for the reason spelled out in
+        booking.html: a bare <p> takes its margin from the mail client, <br>
+        does not.
+        {% endcomment %}
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#ffffff;">
+          {{ message.message|linebreaksbr }}
+        </div>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block footer %}
+  Sent automatically when the contact form is submitted on the website.
+  {% if message.email %}Reply to this email to answer {{ message.name }} directly.{% endif %}
+{% endblock %}

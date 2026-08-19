@@ -1,0 +1,23 @@
+{% extends "admin/index.html" %}
+{% load salon_admin %}
+{% comment %}
+The admin's front page.
+
+Extends Jazzmin's index rather than replacing it, and calls {% templatetag openvariable %} block.super {% templatetag closevariable %}
+so the app list and Recent actions stay exactly as they were. Re-implementing
+those would mean copying Jazzmin's {% templatetag openblock %} get_side_menu {% templatetag closeblock %} markup, which is the
+highest-drift thing available here for no gain.
+
+Jazzmin's own content block emits a `col-lg-9` and a `col-lg-3` as siblings, so
+a `col-12` in front of them lays out as a full-width strip above both.
+
+Wired by CoreConfig.ready() setting admin.site.index_template, not by shadowing
+"admin/index.html" -- a template cannot extend itself.
+{% endcomment %}
+
+{% block content %}
+  <div class="col-12">
+    {% salon_dashboard %}
+  </div>
+  {{ block.super }}
+{% endblock %}

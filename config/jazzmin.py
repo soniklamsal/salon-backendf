@@ -3,8 +3,10 @@ Jazzmin configuration.
 
 The point of the ordering below is that the admin sidebar reads in the same
 order as the landing page: Hero, Service Menu, Motivation, Classes, Our Story,
-As Seen On, Follow Us, Contact, Footer. Someone editing the site can walk the
-menu top-to-bottom and see the page assemble in the same sequence.
+As Seen On, Follow Us, Footer. Someone editing the site can walk the menu
+top-to-bottom and see the page assemble in the same sequence.
+
+The other pages follow after the footer, one page at a time: About Us today.
 
 Icon names are Font Awesome 5 Free, which is what Jazzmin bundles.
 """
@@ -39,6 +41,7 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": [
         "core",
         "core.SiteSettings",
+        "core.EmailSettings",
         "core.NavLink",
         "core.SocialLink",
         "sections",
@@ -51,7 +54,6 @@ JAZZMIN_SETTINGS = {
         "sections.OurStorySection",
         "sections.AsSeenOnSection",
         "sections.FollowUsSection",
-        "sections.ContactColumn",
         "sections.FooterSection",
         "sections.AboutSection",
         "sections.AboutColumn",
@@ -67,6 +69,7 @@ JAZZMIN_SETTINGS = {
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
         "core.SiteSettings": "fas fa-sliders-h",
+        "core.EmailSettings": "fas fa-paper-plane",
         "core.NavLink": "fas fa-bars",
         "core.SocialLink": "fas fa-share-alt",
         "sections.HeroSection": "fas fa-star",
@@ -79,7 +82,6 @@ JAZZMIN_SETTINGS = {
         "sections.OurStorySection": "fas fa-book-open",
         "sections.AsSeenOnSection": "fas fa-newspaper",
         "sections.FollowUsSection": "fas fa-heart",
-        "sections.ContactColumn": "fas fa-address-card",
         "sections.FooterSection": "fas fa-shoe-prints",
         "sections.AboutSection": "fas fa-address-book",
         "sections.AboutColumn": "fas fa-columns",

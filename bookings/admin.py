@@ -16,6 +16,7 @@ from bookings.models import (
     label_time,
 )
 from common.admin import SingletonAdmin
+from common.admin_ajax import AdminAjaxMixin
 from sections.admin import ServiceAdmin as _SectionsServiceAdmin
 
 
@@ -164,7 +165,12 @@ class BarberAdminForm(forms.ModelForm):
 
 
 @admin.register(Barber)
-class BarberAdmin(admin.ModelAdmin):
+class BarberAdmin(AdminAjaxMixin, admin.ModelAdmin):
+    ajax_toggle_fields = ("is_available", "is_published")
+    # `availability` reads the same field as the toggle beside it, so it has to
+    # be re-rendered too or the row contradicts itself until a reload.
+    ajax_refresh_cells = ("availability", "is_available", "is_published")
+
     form = BarberAdminForm
     list_display = (
         "name",
@@ -250,7 +256,16 @@ class AppointmentAdminForm(forms.ModelForm):
 
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
+    # The two actions that may be run against a single row. An allowlist, not a
+    # convenience: `delete_selected` is registered on every ModelAdmin, and
+    # without this it would be reachable one row at a time from a button.
+    ajax_row_actions = ("approve_bookings", "complete_bookings")
+    # Everything the row shows that an approval changes -- including the
+    # buttons themselves, so an approved row's "Approve" becomes "Mark
+    # completed" without a reload.
+    ajax_refresh_cells = ("order_id", "visit", "state", "row_actions")
+
     form = AppointmentAdminForm
     list_display = (
         "reference",
@@ -262,6 +277,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         "paid",
         "state",
         "created_at",
+        "row_actions",
     )
     # `scheduled_date` first: "who is in on Tuesday" is a question about when
     # people are actually coming, not when they asked to.
@@ -354,6 +370,51 @@ class AppointmentAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    @admin.display(description="")
+    def row_actions(self, obj):
+        """The one action this booking is actually waiting for, as a button.
+
+        Approving used to mean a checkbox, a scroll, a dropdown, a Go button
+        and a re-rendered page. The bulk path is still there and still the
+        right tool for a morning's worth of bookings; this is for the one that
+        just came in.
+
+        Three details here are load-bearing rather than stylistic:
+
+        * `type="button"`. The changelist body is inside `<form
+          id="changelist-form">`, and a bare <button> defaults to submitting
+          it -- so the omission would turn every click into a full page POST.
+        * `disabled`, removed by admin/salon-ajax.js once it has bound its
+          handler. With no JavaScript these read as unavailable rather than
+          as live buttons that silently do nothing, and the working bulk
+          actions are directly above them.
+        * `data-salon-pk` on the wrapper, so the script never has to guess the
+          row's identity from a link or a checkbox that may not be there.
+        """
+        buttons = {
+            Appointment.Status.PENDING: ("approve_bookings", "approve", "Approve"),
+            Appointment.Status.APPROVED: ("complete_bookings", "complete", "Mark done"),
+        }
+        choice = buttons.get(obj.status)
+        if choice is None:
+            # Completed and cancelled are finished. An empty cell would leave
+            # the column looking ragged, so it says so.
+            return format_html(
+                '<span class="salon-rowactions__none">&mdash;</span>'
+            )
+
+        action, modifier, label = choice
+        return format_html(
+            '<div class="salon-rowactions" data-salon-pk="{}">'
+            '<button type="button" class="salon-rowactions__btn '
+            'salon-rowactions__btn--{}" data-salon-action="{}" disabled>{}</button>'
+            "</div>",
+            obj.pk,
+            modifier,
+            action,
+            label,
+        )
 
     @admin.display(description="Status", ordering="status")
     def state(self, obj):
@@ -477,17 +538,51 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
+class ContactMessageAdmin(AdminAjaxMixin, admin.ModelAdmin):
+    ajax_toggle_fields = ("is_handled",)
+
     list_display = ("name", "email", "subject", "is_handled", "created_at")
     list_editable = ("is_handled",)
     list_filter = ("is_handled",)
     search_fields = ("name", "email", "subject", "message")
     date_hierarchy = "created_at"
-    readonly_fields = ("name", "email", "subject", "message", "created_at", "updated_at")
-    fields = ("name", "email", "subject", "message", "is_handled", "created_at")
+    readonly_fields = (
+        "name",
+        "email",
+        "subject",
+        "message",
+        "sent_by",
+        "created_at",
+        "updated_at",
+    )
+    fields = ("name", "email", "subject", "message", "sent_by", "is_handled", "created_at")
 
     def has_add_permission(self, request):
         return False
+
+    @admin.display(description="Sent by")
+    def sent_by(self, obj):
+        """Which account sent this, as a person would ask it.
+
+        The raw Clerk id means nothing to staff, so it is resolved through the
+        mirrored profile to the email they signed up with. An enquiry with no
+        account behind it says so plainly rather than showing an empty field --
+        that state is real (the form is offered to signed-in visitors, but the
+        endpoint still accepts a message without a token) and staff should be
+        able to tell the two apart.
+        """
+        if not obj.clerk_user_id:
+            return "Not signed in"
+
+        profile = (
+            ClerkProfile.objects.filter(clerk_user_id=obj.clerk_user_id)
+            .select_related("user")
+            .first()
+        )
+        if profile is None:
+            # Signed in, but `sync_clerk_users` has not mirrored them yet.
+            return f"Account {obj.clerk_user_id[-8:]}"
+        return profile.user.email or profile.user.username
 
 
 @admin.register(Service)

@@ -6,11 +6,15 @@ field defaults, and those defaults are the copy the site shipped with — so a
 fresh deploy that has not been seeded is not a broken page.
 """
 
+from base64 import b64decode
+
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
 from bookings.models import Barber
-from core.models import NavLink, SocialLink
+from core.models import NavLink, SiteSettings, SocialLink
 from sections.models import ClassCard, ClassesSection, GalleryImage, GallerySection, Service
 
 
@@ -83,6 +87,66 @@ class HomepageTests(TestCase):
         NavLink.objects.all().delete()
         SocialLink.objects.all().delete()
         return loaded
+
+
+class SiteLogoTests(TestCase):
+    """`site.logo` is what decides whether the header draws a mark or the name.
+
+    The frontend has no separate flag for it: `KineticNav` renders the image
+    when this string is non-empty and the wordmark when it is not. So the
+    contract worth pinning is that an unset logo serves "" — not null and not a
+    bare "/media/" prefix, either of which the header would read as "there is a
+    logo here" and render as a broken image.
+    """
+
+    # The smallest thing ImageField will accept: a 1x1 transparent GIF. Kept as
+    # base64 because the raw bytes are full of escapes that do not survive being
+    # pasted around.
+    GIF = b64decode("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==")
+
+    def setUp(self):
+        # The payload is cached per content version and each test below writes
+        # to the same singleton.
+        cache.clear()
+
+    def site(self):
+        return self.client.get(reverse("homepage")).json()["site"]
+
+    def test_no_logo_serves_an_empty_string(self):
+        self.assertEqual(self.site()["logo"], "")
+
+    def test_an_upload_is_served_as_an_absolute_url(self):
+        row = SiteSettings.load()
+        row.logo = SimpleUploadedFile("logo.gif", self.GIF, "image/gif")
+        row.save()
+        self.addCleanup(row.logo.delete, save=False)
+
+        logo = self.site()["logo"]
+        self.assertTrue(logo.startswith("http"), logo)
+        self.assertIn("/media/brand/", logo)
+
+    def test_the_url_override_is_used_when_nothing_is_uploaded(self):
+        row = SiteSettings.load()
+        row.logo_url = "https://cdn.example.com/logo.svg"
+        row.save()
+        self.assertEqual(self.site()["logo"], "https://cdn.example.com/logo.svg")
+
+    def test_an_upload_beats_the_override(self):
+        row = SiteSettings.load()
+        row.logo = SimpleUploadedFile("logo.gif", self.GIF, "image/gif")
+        row.logo_url = "https://cdn.example.com/logo.svg"
+        row.save()
+        self.addCleanup(row.logo.delete, save=False)
+
+        self.assertIn("/media/brand/", self.site()["logo"])
+
+    def test_the_brand_name_is_still_served_beside_a_logo(self):
+        # The badge uses it whatever the header does, and it is the logo's alt
+        # text in the mobile menu — so a logo must not displace it in the API.
+        row = SiteSettings.load()
+        row.logo_url = "https://cdn.example.com/logo.svg"
+        row.save()
+        self.assertEqual(self.site()["brandName"], "SALON")
 
 
 class BookingConfigTests(TestCase):

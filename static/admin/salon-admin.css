@@ -53,6 +53,11 @@
   --salon-accent-text: #4f6b00;
   --salon-on-accent: #0a0a0a;
   --salon-destructive: #c2410c;
+  /* "Needs attention", distinct from destructive. Darkened to stay legible as
+     text on a light surface, the same reason --salon-accent-text exists. */
+  --salon-warning: #b45309;
+  --salon-warning-text: #8a4308;
+  --salon-warning-text-rgb: 138, 67, 8;
   --salon-link: #1c1b16;
   /*
    * Bootstrap 5.3 paints links and several utilities through
@@ -70,6 +75,10 @@
   --salon-input: rgba(22, 21, 15, 0.18);
   --salon-hover-bg: rgba(22, 21, 15, 0.05);
   --salon-accent-wash: rgba(150, 199, 0, 0.14);
+  /* Lighter than the wash above, and separate from it: this one tints a
+     run of consecutive rows in the notification panel, where the wash's
+     weight reads as a solid block rather than as a highlight. */
+  --salon-unread-bg: rgba(150, 199, 0, 0.07);
   --salon-ring: rgba(120, 160, 0, 0.3);
   --salon-stripe: rgba(22, 21, 15, 0.025);
   --salon-shadow: 0 1px 2px rgba(22, 21, 15, 0.06);
@@ -90,6 +99,9 @@
   --salon-accent-text: #c7ff3d;
   --salon-on-accent: #0a0a0a;
   --salon-destructive: #f87171;
+  --salon-warning: #f0a03c;
+  --salon-warning-text: #f5b968;
+  --salon-warning-text-rgb: 245, 185, 104;
   --salon-link: #e8e8e8;
   --salon-fg-rgb: 255, 255, 255;
   --salon-bg-rgb: 10, 10, 10;
@@ -100,6 +112,7 @@
   --salon-input: rgba(255, 255, 255, 0.18);
   --salon-hover-bg: rgba(255, 255, 255, 0.06);
   --salon-accent-wash: rgba(199, 255, 61, 0.12);
+  --salon-unread-bg: rgba(199, 255, 61, 0.05);
   --salon-ring: rgba(199, 255, 61, 0.25);
   --salon-stripe: rgba(255, 255, 255, 0.03);
   --salon-shadow: none;
@@ -194,7 +207,7 @@ h3,
  * owning the behaviour and only the palette is ours.
  *
  * Width is nudged past the stock 250px because this menu carries the
- * section names ("Motivation lines", "Contact columns") and at 250 the
+ * section names ("Motivation lines", "Navigation links") and at 250 the
  * longest of them wrap onto a second line.
  * ---------------------------------------------------------------------- */
 
@@ -775,11 +788,28 @@ input[type="submit"],
   color: var(--salon-destructive);
 }
 
+/* Warning was the one level with no token behind it, so it rendered in stock
+   Bootstrap amber — a colour from a different design system sitting next to
+   the lime. It earns a real token rather than borrowing the destructive one:
+   "this needs attention" and "this failed" are different things to say. */
+.alert-warning {
+  background-color: color-mix(in srgb, var(--salon-warning) 16%, transparent);
+  border-color: var(--salon-warning);
+  color: var(--salon-warning-text);
+}
+
 .badge.bg-primary,
 .badge.bg-warning,
 .badge.bg-success {
   background-color: var(--salon-accent) !important;
   color: var(--salon-on-accent) !important;
+}
+
+/* Not lime. This is the one badge that has to read as "wrong", and the accent
+   is spent on things that are merely active. */
+.badge.bg-danger {
+  background-color: var(--salon-destructive) !important;
+  color: var(--salon-bg) !important;
 }
 
 .page-link {
@@ -866,7 +896,75 @@ body.login {
   font-style: italic;
 }
 
-/* --- 3l. Scrollbars ----------------------------------------------------- */
+/* --- 3l. Navbar preview (core/admin.py SiteSettingsAdmin) --------------- */
+
+/* Deliberately painted in the *site's* colours rather than the admin's: it is
+   a picture of the header, and a mark that reads well on this page but not on
+   the real dark bar would be exactly the wrong answer. The dark values are
+   hardcoded for that reason -- they are the front end's, not this theme's, and
+   must not follow the admin's light/dark switch. */
+.salon-navbar {
+  border: 1px solid var(--salon-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.salon-navbar__bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: #16150f;
+  color: #ffffff;
+  /* Wide content scrolls inside the card instead of stretching the form. */
+  overflow-x: auto;
+}
+
+.salon-navbar__mark {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+/* height and max-width are written inline from core.admin's fixed constants,
+   which mirror --nav-logo-* in the front end's globals.css. */
+.salon-navbar__logo {
+  display: block;
+  width: auto;
+  object-fit: contain;
+}
+
+.salon-navbar__wordmark {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 5.04px;
+}
+
+.salon-navbar__links {
+  display: flex;
+  gap: 2rem;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.salon-navbar__link {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.salon-navbar__cta {
+  flex: 0 0 auto;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  background: #c7ff3d;
+  color: #16150f;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* --- 3m. Scrollbars ----------------------------------------------------- */
 
 /* Matches the front end's treatment: the bar is present but recedes into
    the surface instead of drawing a bright gutter down the page. */
@@ -890,4 +988,465 @@ body.login {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--salon-accent-text);
+}
+
+/* --- 3n. Row actions (bookings/admin.py + admin/salon-ajax.js) ---------- */
+/* The Approve / Mark completed buttons in the appointments changelist. They
+   render disabled and admin/salon-ajax.js enables them, so with no JavaScript
+   they are visibly inert rather than live-looking and dead — the bulk actions
+   directly above them still work. Disabled is therefore a normal resting
+   state here, not only an error, and is styled as such. */
+
+.salon-rowactions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.salon-rowactions__btn {
+  border: 1px solid var(--salon-border);
+  border-radius: 8px;
+  padding: 3px 12px;
+  font-family: var(--salon-font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.salon-rowactions__btn--approve {
+  background-color: var(--salon-accent);
+  border-color: var(--salon-accent);
+  color: var(--salon-on-accent);
+}
+
+.salon-rowactions__btn--complete {
+  background-color: transparent;
+  color: var(--salon-fg);
+}
+
+.salon-rowactions__btn--complete:hover:not([disabled]) {
+  background-color: var(--salon-hover-bg);
+  border-color: var(--salon-input);
+}
+
+.salon-rowactions__btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.salon-rowactions__none {
+  color: var(--salon-muted);
+}
+
+
+/* --- 3o. Instant toggles (common/admin_ajax.py + admin/salon-ajax.js) --- */
+/* The stock list_editable checkbox, kept exactly where it was. It is still a
+   real <input type="checkbox"> with its real name — that is the no-JavaScript
+   path, and it is also what keeps keyboard and screen-reader behaviour
+   Django's rather than something reimplemented here. Only the feedback is
+   added: a brief wash when the save lands, so a click that changed something
+   on the server looks different from one that only moved a box. */
+
+.salon-switch {
+  border-radius: 6px;
+  transition: background-color 0.25s ease;
+}
+
+.salon-switch input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.salon-switch--saved {
+  background-color: var(--salon-accent-wash);
+}
+
+
+/* --- 3p. Dashboard (core/dashboard.py + admin/salon_dashboard.html) ----- */
+/* The strip above Jazzmin's app list. Four numbers, each a link into the list
+   it counts — which is what makes it a dashboard rather than a poster.
+   Figures are set in the body face, not the display face: Oswald on a large
+   number reads as decoration, and the number is the content. */
+
+.salon-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.salon-stat {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--salon-border);
+  border-radius: 12px;
+  background-color: var(--salon-card);
+  box-shadow: var(--salon-shadow);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.salon-stat:hover {
+  border-color: var(--salon-accent-text);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.salon-stat__value {
+  display: block;
+  font-family: var(--salon-font);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--salon-fg);
+}
+
+/* Exactly one of these per page. If a second is ever added, neither is the
+   headline any more and the eye has nowhere to land first. */
+.salon-stat__value--hero {
+  font-size: 3rem;
+}
+
+.salon-stat__label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--salon-muted);
+}
+
+/* Never colour alone — the icon and the word carry the same meaning for
+   anyone who cannot separate the hue. */
+.salon-stat--warn .salon-stat__value {
+  color: var(--salon-warning-text);
+}
+
+.salon-stat--warn .salon-stat__label i {
+  margin-right: 4px;
+}
+
+.salon-pending__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--salon-border);
+}
+
+.salon-pending__row:last-child {
+  border-bottom: 0;
+}
+
+.salon-pending__who {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.salon-pending__name {
+  font-weight: 600;
+}
+
+.salon-pending__meta {
+  display: block;
+  font-size: 0.83rem;
+  color: var(--salon-muted);
+}
+
+.salon-pending__empty {
+  padding: 10px 0;
+  color: var(--salon-muted);
+}
+
+
+/* --- 3q. Busy state (admin/salon-ajax.js) ------------------------------- */
+/* Anything waiting on the server. One class for buttons and checkboxes alike,
+   so there is a single visual language for "this is in flight" rather than
+   one per control. */
+
+.salon-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.salon-rowactions__btn.salon-busy::after {
+  content: "";
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 6px;
+  vertical-align: -1px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: salon-spin 0.7s linear infinite;
+}
+
+@keyframes salon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salon-rowactions__btn.salon-busy::after {
+    animation: none;
+  }
+
+  .salon-stat,
+  .salon-switch {
+    transition: none;
+  }
+}
+
+/* --- 8. Notification bell ---------------------------------------------- *
+ *
+ * Sits in the navbar cluster immediately left of the light/dark switch; see
+ * static/admin/salon-notifications.js for how it gets there.
+ *
+ * Everything below is written in the same tokens as the rest of this file, so
+ * the panel follows the mode with no second set of rules for dark. The one
+ * exception is the badge, which is pinned to the destructive colour in both
+ * modes on purpose: it is a count of things not yet dealt with, and it should
+ * read the same way whichever mode somebody happens to be working in.
+ */
+
+.salon-bell {
+  position: relative;
+}
+
+.salon-bell-toggle {
+  position: relative;
+  cursor: pointer;
+}
+
+.salon-bell-badge {
+  position: absolute;
+  top: 0.15rem;
+  /* Nudged off the bell's right edge rather than centred on it, so a
+     two-digit count grows away from the icon instead of over it. */
+  left: 55%;
+  min-width: 1.05rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--salon-destructive);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.salon-bell-badge[hidden] {
+  display: none;
+}
+
+/* The bell leans over when there is something waiting. Two seconds of it,
+   once per page load -- enough to catch an eye that is already on the screen,
+   not a thing that keeps moving in somebody's periphery all morning. */
+.salon-bell-toggle:has(.salon-bell-badge:not([hidden])) .fa-bell {
+  animation: salon-bell-swing 2s ease-in-out 1;
+  transform-origin: top center;
+}
+
+@keyframes salon-bell-swing {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0);
+  }
+  5%,
+  25% {
+    transform: rotate(12deg);
+  }
+  15%,
+  35% {
+    transform: rotate(-12deg);
+  }
+  45% {
+    transform: rotate(6deg);
+  }
+  52% {
+    transform: rotate(-4deg);
+  }
+}
+
+.salon-bell-panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  /* Right-anchored: the bell is near the end of the navbar, and a panel that
+     grew rightwards would run off the window on a laptop. */
+  right: 0;
+  z-index: 1080;
+  width: 22rem;
+  max-width: calc(100vw - 1.5rem);
+  background: var(--salon-popover);
+  border: 1px solid var(--salon-border);
+  border-radius: 0.6rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.salon-bell.is-open .salon-bell-panel {
+  display: block;
+}
+
+.salon-bell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--salon-border);
+}
+
+.salon-bell-heading {
+  font-family: var(--salon-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--salon-fg);
+}
+
+.salon-bell-readall {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--salon-muted);
+  cursor: pointer;
+}
+
+.salon-bell-readall:hover {
+  color: var(--salon-accent-text);
+  text-decoration: underline;
+}
+
+.salon-bell-list {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.salon-bell-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--salon-border);
+  color: var(--salon-fg);
+  text-decoration: none;
+}
+
+.salon-bell-item:last-child {
+  border-bottom: 0;
+}
+
+a.salon-bell-item:hover {
+  background: var(--salon-hover-bg);
+  color: var(--salon-fg);
+  text-decoration: none;
+}
+
+/* The dot is the unread marker and also the left rail that keeps every row's
+   text on the same line, so it holds its space when it is invisible rather
+   than being removed. */
+.salon-bell-dot {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.4rem;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.salon-bell-item.is-unread {
+  background: var(--salon-unread-bg);
+}
+
+.salon-bell-item.is-unread .salon-bell-dot {
+  background: var(--salon-accent);
+}
+
+.salon-bell-body {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.salon-bell-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.salon-bell-kind {
+  font-size: 0.72rem;
+  color: var(--salon-muted);
+}
+
+.salon-bell-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  /* One line, cut with an ellipsis: a customer can type a 200-character
+     subject and it must not push the panel into a wall of text. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.salon-bell-summary,
+.salon-bell-time {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--salon-muted);
+}
+
+.salon-bell-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.salon-bell-time {
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+}
+
+.salon-bell-empty {
+  padding: 1.1rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--salon-muted);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salon-bell-toggle:has(.salon-bell-badge:not([hidden])) .fa-bell {
+    animation: none;
+  }
+}
+
+/* The mute switch, between the heading and "Mark all read". Muted state is
+   marked by colour as well as by the icon swap, so the two do not have to be
+   read together at a glance. */
+.salon-bell-sound {
+  margin-left: auto;
+  margin-right: 0.6rem;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--salon-muted);
+  cursor: pointer;
+}
+
+.salon-bell-sound:hover {
+  color: var(--salon-accent-text);
+}
+
+.salon-bell-sound.is-muted {
+  color: var(--salon-destructive);
 }

@@ -6,6 +6,19 @@ so it owns no tables and needs no app registry entry.
 
 from django.db import models
 
+# Every image on the site is an upload *plus* an optional external URL, so this
+# help text is shared by both content apps. It lives here rather than in
+# `sections` because `core.SiteSettings` carries a pair too and `core` must not
+# import from `sections` — sections is the layer above it.
+#
+# These fields are CharField rather than URLField on purpose: the seeded values
+# are paths into the Next.js `public/` folder ("/images/hero-texture.jpg"),
+# which URLField's validator rejects. They accept an absolute URL just as well.
+IMAGE_URL_HELP = (
+    "Leave empty if you uploaded a file — the upload is always used. Only "
+    "fill this in to point at an image hosted somewhere else."
+)
+
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

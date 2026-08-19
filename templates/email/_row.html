@@ -1,0 +1,23 @@
+{% comment %}
+One label/value line inside a card.
+
+    {% include "email/_row.html" with label="Phone" value=appointment.phone %}
+
+An empty `value` renders an em dash rather than a blank gap, so a field the
+customer left out reads as missing instead of as a rendering fault.
+
+Pass accent=True for the one value per email worth the lime -- the booking
+reference. More than one and none of them stand out.
+
+The two cells are a table row, not floats: neither float nor flex survives
+Outlook. The label column is a fixed width so every value in the card starts
+at the same x, which is the whole reason this scans on a phone.
+{% endcomment %}
+<tr>
+  <td width="104" valign="top" style="width:104px;padding:0 12px 12px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:20px;font-weight:600;letter-spacing:0.6px;color:#a6a6a6;text-transform:uppercase;">
+    {{ label }}
+  </td>
+  <td valign="top" style="padding:0 0 12px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:20px;{% if accent %}font-weight:600;color:#c7ff3d;letter-spacing:0.4px;{% else %}color:#ffffff;{% endif %}">
+    {% if value %}{{ value }}{% else %}<span style="color:#6b6b6b;">&#8212;</span>{% endif %}
+  </td>
+</tr>

@@ -20,7 +20,6 @@ from sections.models import (
     AsSeenOnSection,
     ClassCard,
     ClassesSection,
-    ContactColumn,
     FollowUsSection,
     FooterSection,
     GalleryImage,
@@ -141,26 +140,6 @@ GALLERY_IMAGES = [
     ("/images/dribbble/fourth.jpeg", "Product page concept"),
     ("/images/dribbble/fifth.jpeg", "Interface design study"),
     ("/images/dribbble/sixth.jpeg", "Marketing site exploration"),
-]
-
-# components/contact-details.tsx — the line breaks are the design's and set each
-# column's width, so they are reproduced exactly.
-CONTACT_COLUMNS = [
-    (
-        "Contact",
-        ContactColumn.Icon.PHONE,
-        "T: 070 9485 7568\ninfo@beautysalon.com",
-    ),
-    (
-        "Hours",
-        ContactColumn.Icon.CLOCK,
-        "Mon to Fri: 7:30 am — 1:00 am\nSat: 9:00 am — 1:00 am\nSun: 9:00 am — 11:30 pm",
-    ),
-    (
-        "Location",
-        ContactColumn.Icon.PIN,
-        "Thamel,\nKathmandu\nNepal",
-    ),
 ]
 
 SINGLETONS = [
@@ -293,16 +272,6 @@ class Command(BaseCommand):
                 for i, (name, role) in enumerate(BARBERS)
             ],
             key="name",
-            reset=reset,
-        )
-
-        created_total += self._seed(
-            ContactColumn,
-            [
-                {"heading": heading, "icon": icon, "body": body, "order": i}
-                for i, (heading, icon, body) in enumerate(CONTACT_COLUMNS)
-            ],
-            key="heading",
             reset=reset,
         )
 

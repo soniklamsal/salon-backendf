@@ -485,6 +485,18 @@ class ContactMessage(TimeStampedModel):
     message = models.TextField()
     is_handled = models.BooleanField(default=False)
 
+    # Who sent it, taken from a verified Clerk session -- never from the form.
+    # The website only offers the message form to a signed-in visitor, so this
+    # is normally set; it stays blank-able because the endpoint still accepts an
+    # enquiry without a token. Refusing one because Clerk blinked, or because a
+    # tab sat open until the session expired, would lose a real customer -- the
+    # same trade `Appointment.clerk_user_id` makes.
+    clerk_user_id = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Clerk account id. Set automatically; not editable by the sender.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
 

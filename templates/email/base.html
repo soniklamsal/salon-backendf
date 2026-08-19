@@ -1,0 +1,112 @@
+{% comment %}
+The shell every notification email renders into.
+
+Written the way email has to be written, not the way the site is written. The
+site's shadcn components are React and Tailwind; a mail client runs neither.
+Gmail strips most of a <style> block, Outlook renders through Word, and
+neither supports flexbox, grid, custom properties or class-based styling that
+lives anywhere but the tag itself. So: tables for layout, every colour and
+size inline, and the design tokens from salon-frontend/src/app/globals.css
+copied in as literal hex.
+
+Those tokens are the point -- this is the same near-black surface and lime
+accent as the site, so an email from the salon looks like the salon. Keep the
+values here in step with globals.css by hand; there is no build step that can
+do it, which is the trade for mail that renders the same in every client.
+
+  --background #0a0a0a   --card #121212        --foreground #ffffff
+  --muted #1e1e1e        --muted-foreground #a6a6a6
+  --primary #c7ff3d      --primary-foreground #0a0a0a
+
+`--border` is rgba(255,255,255,.16) on the site. Outlook does not do rgba, so
+it is composited against the surface underneath and written as solid hex.
+{% endcomment %}<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% comment %}
+Tells a client this design is already dark so it does not "helpfully" invert
+it. Without these, Gmail's dark mode can bleach the lime accent off the page.
+{% endcomment %}<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>{% block subject %}{% endblock %}</title>
+
+{% comment %}
+The preview line in an inbox list, before anything is opened. Hidden in the
+body itself: zero height, zero opacity, pushed off-screen. The run of
+zero-width spaces after it stops the client from filling the rest of the
+preview with whatever markup happens to come next.
+{% endcomment %}
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;opacity:0;color:transparent;height:0;width:0;">
+  {% block preheader %}{% endblock %}
+  &#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;&#8203;
+</div>
+
+{% comment %}
+The outer table is the page background. A client that ignores <body> styling
+still paints this, which is why the background lives on a table and not on
+the body tag.
+{% endcomment %}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0a0a0a" style="background-color:#0a0a0a;margin:0;padding:0;width:100%;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;">
+
+        <tr>
+          <td style="padding:0 4px 20px 4px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td align="left" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:20px;font-weight:700;letter-spacing:3px;color:#ffffff;text-transform:uppercase;">
+                  {{ brand_name|default:"Salon" }}
+                </td>
+                <td align="right" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:20px;letter-spacing:1px;color:#a6a6a6;text-transform:uppercase;">
+                  {% block header_note %}Notification{% endblock %}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {% comment %}
+        The card. border-radius is ignored by Outlook's Word engine, which
+        gets square corners and is none the worse for it -- no VML fallback,
+        because a rounded corner is not worth conditional markup nobody will
+        maintain.
+        {% endcomment %}
+        <tr>
+          <td bgcolor="#121212" style="background-color:#121212;border:1px solid #2b2b2b;border-radius:12px;padding:28px 28px 8px 28px;">
+
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;font-weight:600;letter-spacing:1.5px;color:#c7ff3d;text-transform:uppercase;padding-bottom:8px;">
+                  {% block eyebrow %}{% endblock %}
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:24px;line-height:31px;font-weight:600;letter-spacing:-0.3px;color:#ffffff;padding-bottom:4px;">
+                  {% block heading %}{% endblock %}
+                </td>
+              </tr>
+              {% block subheading %}{% endblock %}
+            </table>
+
+            <div style="height:1px;line-height:1px;font-size:0;background-color:#262626;margin:22px 0 4px 0;">&nbsp;</div>
+
+            {% block content %}{% endblock %}
+
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 4px 0 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#a6a6a6;">
+            {% block footer %}
+              Sent automatically when a form is submitted on the website.
+              Reply to this email to answer the customer directly.
+            {% endblock %}
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>

@@ -1,0 +1,38 @@
+{% extends "admin/change_form.html" %}
+{% comment %}
+Adds a "Send test email" button beside Save.
+
+It is a form, not a link, because it sends: a GET that acts is one prefetch or
+one crawler away from firing on its own, and the view refuses anything but
+POST. It sits outside the settings form -- nesting forms is invalid HTML and
+browsers resolve it by dropping one of them -- so it posts on its own and the
+view redirects straight back here.
+{% endcomment %}
+
+{% block submit_buttons_bottom %}
+  {{ block.super }}
+  {% if send_test_url %}
+    <div class="submit-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <input type="submit" value="Send test email"
+             form="salon-send-test" class="default" style="float:none;margin:0">
+      <span class="help" style="margin:0;padding:0">
+        Sends one message to the notification address, using the settings as
+        last <b>saved</b> — save any changes above first.
+      </span>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block admin_change_form_document_ready %}
+  {{ block.super }}
+  {% if send_test_url %}
+    {# Placed at the end of the document so it is never inside the main form. #}
+    {# `action` is the no-JavaScript path and still works on its own. When the
+       script is running it intercepts the submit and posts to data-salon-json
+       instead, so the page is not frozen for the length of an SMTP round trip. #}
+    <form id="salon-send-test" method="post" action="{{ send_test_url }}"
+          data-salon-json="{{ send_test_json_url }}">
+      {% csrf_token %}
+    </form>
+  {% endif %}
+{% endblock %}

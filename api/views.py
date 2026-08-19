@@ -28,7 +28,6 @@ from api.serializers import (
     BookingCopySerializer,
     ClassCardSerializer,
     ClassesSerializer,
-    ContactColumnSerializer,
     ContactMessageCreateSerializer,
     MyBookingSerializer,
     FollowUsSerializer,
@@ -47,15 +46,19 @@ from bookings.models import Appointment, Barber, BookingSection, ClerkProfile
 from common.cache import cached_payload
 from common.throttling import MyBookingsThrottle, ScreenshotThrottle
 from common.clerk import user_from_request
+from common.notifications import (
+    notify_new_booking,
+    notify_new_contact_message,
+)
 from common.storage import reference_from_token, signed_url
 from common.utils import resolve_image
 from core.models import NavLink, SiteSettings, SocialLink
+from core.notifications import record_new_booking, record_new_contact_message
 from sections.models import (
     AboutSection,
     AsSeenOnSection,
     ClassCard,
     ClassesSection,
-    ContactColumn,
     FollowUsSection,
     FooterSection,
     GallerySection,
@@ -81,7 +84,6 @@ _ROOT_ROUTES = {
     "classes": "classcard-list",
     "nav-links": "navlink-list",
     "social-links": "sociallink-list",
-    "contact-columns": "contactcolumn-list",
     "appointments": "appointment-create",
     "contact-messages": "contact-create",
 }
@@ -157,11 +159,6 @@ def homepage(request, format=None):
             "ourStory": OurStorySerializer(OurStorySection.load(), context=context).data,
             "asSeenOn": AsSeenOnSerializer(AsSeenOnSection.load(), context=context).data,
             "followUs": FollowUsSerializer(FollowUsSection.load(), context=context).data,
-            "contactColumns": ContactColumnSerializer(
-                ContactColumn.objects.filter(is_published=True),
-                many=True,
-                context=context,
-            ).data,
             "footer": FooterSerializer(FooterSection.load(), context=context).data,
         }
 
@@ -260,11 +257,6 @@ class NavLinkViewSet(ReadOnlyPublishedViewSet):
 class SocialLinkViewSet(ReadOnlyPublishedViewSet):
     model = SocialLink
     serializer_class = SocialLinkSerializer
-
-
-class ContactColumnViewSet(ReadOnlyPublishedViewSet):
-    model = ContactColumn
-    serializer_class = ContactColumnSerializer
 
 
 def _ensure_account_visible(claims):
@@ -447,9 +439,39 @@ class AppointmentCreateView(CreateAPIView):
             # claims already verified above are used, and an existing row is
             # left alone — the sync command owns the full detail.
             _ensure_account_visible(claims)
-        serializer.save(**extra)
+        appointment = serializer.save(**extra)
+        # Queued, not sent: it goes out on a background thread once this
+        # transaction commits, so a slow or unreachable Gmail costs the
+        # customer nothing and cannot fail a booking that is already saved.
+        notify_new_booking(appointment)
+        # And the bell in the admin navbar, for whoever is already logged in
+        # and looking at a different screen. Separate from the email because
+        # they fail separately: see core/notifications.py.
+        record_new_booking(appointment)
 
 
 class ContactMessageCreateView(CreateAPIView):
     serializer_class = ContactMessageCreateSerializer
     throttle_scope = "submissions"
+
+    def perform_create(self, serializer):
+        """Stamp the enquiry with the *verified* Clerk user, if there is one.
+
+        The claims come from the signed session token, not the request body, so
+        a caller cannot post somebody else's id and attribute a message to them.
+        `clerk_user_id` is not a serializer field, which is what makes that
+        true rather than merely intended.
+
+        A request with no valid token still succeeds, anonymously. The website
+        only shows the form to a signed-in visitor, but gating it there is a
+        product decision; refusing here as well would mean a Clerk outage
+        silently loses a customer's enquiry.
+        """
+        claims = user_from_request(self.request) or {}
+        extra = {}
+        if claims.get("sub"):
+            extra["clerk_user_id"] = claims["sub"]
+            _ensure_account_visible(claims)
+        message = serializer.save(**extra)
+        notify_new_contact_message(message)
+        record_new_contact_message(message)

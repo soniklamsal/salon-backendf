@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% load static salon_admin %}
+{% comment %}
+Loads the admin's AJAX layer on every admin page.
+
+This file exists because there is nowhere else to put it. Jazzmin's
+`custom_js` setting takes a single string, not a list, and it is already spent
+on admin/theme-toggle.js. A `class Media` declaration reaches the head of a
+change form or changelist but *not* the dashboard, which renders no `{{ media }}`
+at all -- and the dashboard is where the row buttons need it most.
+
+`{% block extrajs %}` here runs at the bottom of <body>, after jQuery,
+Bootstrap and AdminLTE, on every page that extends admin/base_site.html.
+Jazzmin's own change_list.html and change_form.html both call `{{ block.super }}`
+in this block, so it survives them. The login page extends
+registration/base.html instead, so it correctly does not load any of this.
+
+Upstream's version of this file is a single line -- `{% templatetag openblock %}
+extends 'admin/base.html' {% templatetag closeblock %}` -- so overriding it
+carries about as little upgrade risk as a template override can.
+{% endcomment %}
+
+{% block extrajs %}
+  {{ block.super }}
+  {% salon_ajax_config %}
+  <script src="{% static 'admin/salon-ajax.js' %}"></script>
+  {% comment %}
+  The notification bell. Here rather than in a `class Media` for the reason
+  above -- it belongs to no ModelAdmin at all, being in the navbar on every
+  page -- and after admin/theme-toggle.js, which Jazzmin's `custom_js` loads
+  further up this template. That order is what lets the bell find the
+  light/dark switch already in the navbar and seat itself to the left of it.
+  {% endcomment %}
+  <script src="{% static 'admin/salon-notifications.js' %}"></script>
+{% endblock %}

@@ -15,18 +15,9 @@ Two conventions run through the whole file:
 
 from django.db import models
 
-from common.models import OrderedModel, SingletonModel
+from common.models import IMAGE_URL_HELP, OrderedModel, SingletonModel
 from common.storage import video_storage
 from common.validators import validate_video_upload
-
-# These fields are CharField rather than URLField on purpose: the seeded values
-# are paths into the Next.js `public/` folder ("/images/hero-texture.jpg"),
-# which URLField's validator rejects. They accept an absolute URL just as well.
-IMAGE_URL_HELP = (
-    "Leave empty if you uploaded a file — the upload is always used. Only "
-    "fill this in to point at an image hosted somewhere else."
-)
-
 
 def color_help(what: str, default: str) -> str:
     """Help text for a colour field, carrying its own default in brackets.
@@ -464,39 +455,6 @@ class FollowUsSection(SingletonModel):
 
     def __str__(self):
         return "Follow us"
-
-
-class ContactColumn(OrderedModel):
-    """One of the three columns in the Contact / Hours / Location band.
-
-    The body is a single textarea because the design's line breaks are
-    deliberate — the Figma comp sized the Location column to roughly 160px off
-    a three-line address ("85 Royal Mint Street," / "London, E1 8LG" /
-    "United Kingdom"). The salon's own address, "Thamel," / "Kathmandu" /
-    "Nepal", keeps that three-line shape but is narrower, so the column sits
-    inside the measured width rather than filling it. Each line is emitted as
-    its own element by the API.
-    """
-
-    class Icon(models.TextChoices):
-        PHONE = "phone", "Phone"
-        CLOCK = "clock", "Clock"
-        PIN = "pin", "Map pin"
-
-    heading = models.CharField(max_length=60)
-    icon = models.CharField(max_length=20, choices=Icon.choices, default=Icon.PHONE)
-    body = models.TextField(help_text="One line per line. Line breaks are preserved.")
-
-    class Meta(OrderedModel.Meta):
-        verbose_name = "Contact column"
-        verbose_name_plural = "Contact columns"
-
-    def __str__(self):
-        return self.heading
-
-    @property
-    def lines(self) -> list[str]:
-        return [line.strip() for line in self.body.splitlines() if line.strip()]
 
 
 class FooterSection(SingletonModel):

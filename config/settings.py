@@ -343,6 +343,88 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+# --- Email (SMTP) ----------------------------------------------------------
+# Off by default. Without EMAIL_HOST_USER and EMAIL_HOST_PASSWORD, mail is
+# written to stdout instead of sent, which is what a fresh clone and the test
+# suite want -- the same shape as the Cloudinary block above: the presence of
+# credentials is the switch, there is nothing else to turn on.
+#
+# The defaults are Gmail's. .env.example spells out the App Password step,
+# which is the part that is not optional: Google stopped accepting an account
+# password over SMTP, so the ordinary password here always fails.
+#
+# Everything here reads through `email_env`, not `env`: a key present in .env
+# but left blank ("EMAIL_PORT=") reaches os.environ as an empty string, which
+# beats a default that is only applied when the key is missing entirely. For
+# an optional block that ships pre-listed in .env.example, blank has to mean
+# unset or the documented defaults are the one thing nobody gets.
+def email_env(name: str, default: str = "") -> str:
+    return env(name).strip() or default
+
+
+def email_env_bool(name: str, default: bool) -> bool:
+    return env_bool(name, default) if env(name).strip() else default
+
+
+EMAIL_HOST = email_env("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(email_env("EMAIL_PORT", "587"))
+
+EMAIL_HOST_USER = env("EMAIL_HOST_USER").strip()
+# Google shows an App Password as four groups of four ("abcd efgh ijkl mnop")
+# and people paste it that way. The spaces are presentation, not part of the
+# secret, and leaving them in produces an authentication failure that looks
+# like a wrong password.
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD").replace(" ", "")
+
+# 587 is STARTTLS, 465 is implicit TLS. Deriving both from the port means the
+# common case needs no further settings; either can still be forced by env.
+EMAIL_USE_TLS = email_env_bool("EMAIL_USE_TLS", EMAIL_PORT == 587)
+EMAIL_USE_SSL = email_env_bool("EMAIL_USE_SSL", EMAIL_PORT == 465)
+
+if EMAIL_USE_TLS and EMAIL_USE_SSL:
+    raise RuntimeError(
+        "EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be on. Use TLS with port "
+        "587 or SSL with port 465, not both."
+    )
+
+# Django's default is no timeout at all, so an unreachable SMTP host hangs the
+# request thread until the OS gives up. Every send here happens inside a web
+# request, so it is capped.
+EMAIL_TIMEOUT = int(email_env("EMAIL_TIMEOUT", "10"))
+
+# Whether *.env alone* could send. The admin screen may supply credentials
+# instead, so this is not the same question as "can this site send mail" --
+# common.email_config.active_config() answers that one.
+EMAIL_CONFIGURED = bool(EMAIL_HOST_USER and EMAIL_HOST_PASSWORD)
+
+# Not Django's SMTP backend directly. This one re-reads the SMTP settings on
+# every send, so a password typed into the admin takes effect on the next
+# booking instead of the next restart, and it falls back to printing to the
+# console when neither the admin nor .env has credentials. See
+# common/email_backend.py.
+EMAIL_BACKEND = email_env("EMAIL_BACKEND") or "common.email_backend.ConfiguredEmailBackend"
+
+# Gmail rewrites the envelope sender to the authenticated account regardless of
+# what is set here, so anything other than that account (or an alias verified
+# under Gmail's "Send mail as") shows up as a mismatch to spam filters.
+DEFAULT_FROM_EMAIL = email_env("DEFAULT_FROM_EMAIL") or (
+    EMAIL_HOST_USER or "webmaster@localhost"
+)
+# Where Django's own error mail comes from, if ADMINS is ever set.
+SERVER_EMAIL = email_env("SERVER_EMAIL") or DEFAULT_FROM_EMAIL
+
+# Notifications go out on a background thread so the customer's booking is not
+# waiting on Gmail. Turn it off to send inline -- simpler to debug, and the
+# only sane setting if this ever moves behind a real task queue.
+EMAIL_NOTIFY_ASYNC = email_env_bool("EMAIL_NOTIFY_ASYNC", True)
+
+# The salon's own inbox -- who gets told when a booking or an enquiry arrives.
+# Defaults to the sending account, which is the usual case for a single Gmail.
+SALON_NOTIFY_EMAILS = env_list("SALON_NOTIFY_EMAILS") or (
+    [EMAIL_HOST_USER] if EMAIL_HOST_USER else []
+)
+
+
 # --- Admin -----------------------------------------------------------------
 
 from config.jazzmin import JAZZMIN_SETTINGS, JAZZMIN_UI_TWEAKS  # noqa: E402,F401

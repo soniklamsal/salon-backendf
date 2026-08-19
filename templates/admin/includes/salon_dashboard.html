@@ -1,0 +1,54 @@
+{% comment %}
+The dashboard strip. Rendered by {% templatetag openblock %} salon_dashboard {% templatetag closeblock %}
+in core/templatetags/salon_admin.py.
+
+Every number is a link into the list it counts, because a figure you cannot
+click into is a poster rather than somewhere to start work. The values carry
+`data-salon-stat` so admin/salon-ajax.js can correct one after an inline
+approval — that is the only thing the script does here; the page is complete
+without it.
+{% endcomment %}
+
+<div class="salon-stats" data-salon-stats>
+  {% for tile in tiles %}
+    <a class="salon-stat{% if tile.warn %} salon-stat--warn{% endif %}" href="{{ tile.url }}">
+      <span class="salon-stat__value{% if tile.hero %} salon-stat__value--hero{% endif %}"
+            data-salon-stat="{{ tile.key }}">{{ tile.value }}</span>
+      <span class="salon-stat__label">
+        {% if tile.warn %}<i class="fas {{ tile.icon }}"></i>{% endif %}{{ tile.label }}
+      </span>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h4 class="card-title mb-0">Waiting for approval</h4>
+    <a class="btn btn-sm btn-secondary" href="{% url 'admin:bookings_appointment_changelist' %}?status__exact=pending">
+      See all
+    </a>
+  </div>
+  <div class="card-body">
+    {% for booking in pending_bookings %}
+      <div class="salon-pending__row">
+        <div class="salon-pending__who">
+          <a class="salon-pending__name" href="{% url 'admin:bookings_appointment_change' booking.pk %}">
+            {{ booking.name }}
+          </a>
+          <span class="salon-pending__meta">
+            {{ booking.reference }}
+            {% if booking.service %} &middot; {{ booking.service.label }}{% endif %}
+            {% if booking.barber %} &middot; {{ booking.barber.name }}{% endif %}
+            {% if booking.phone %} &middot; {{ booking.phone }}{% endif %}
+          </span>
+        </div>
+        {# The same markup the changelist uses, from the same Python method
+           (see core/dashboard.py), so the button behaves identically here and
+           needs no extra script. #}
+        {{ booking.row_actions }}
+      </div>
+    {% empty %}
+      <p class="salon-pending__empty mb-0">Nothing waiting. Every booking has been dealt with.</p>
+    {% endfor %}
+  </div>
+</div>

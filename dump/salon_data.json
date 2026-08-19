@@ -512,39 +512,6 @@
   }
 },
 {
-  "model": "sections.contactcolumn",
-  "pk": 1,
-  "fields": {
-    "order": 0,
-    "is_published": true,
-    "heading": "Contact",
-    "icon": "phone",
-    "body": "T: 070 9485 7568\ninfo@beautysalon.com"
-  }
-},
-{
-  "model": "sections.contactcolumn",
-  "pk": 2,
-  "fields": {
-    "order": 1,
-    "is_published": true,
-    "heading": "Hours",
-    "icon": "clock",
-    "body": "Mon to Fri: 7:30 am — 1:00 am\nSat: 9:00 am — 1:00 am\nSun: 9:00 am — 11:30 pm"
-  }
-},
-{
-  "model": "sections.contactcolumn",
-  "pk": 3,
-  "fields": {
-    "order": 2,
-    "is_published": true,
-    "heading": "Location",
-    "icon": "pin",
-    "body": "Thamel,\nKathmandu\nNepal"
-  }
-},
-{
   "model": "sections.footersection",
   "pk": 1,
   "fields": {

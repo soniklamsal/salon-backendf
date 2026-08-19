@@ -1,0 +1,89 @@
+{% extends "email/base.html" %}
+{% comment %}
+A booking landed. Everything the salon needs in order to decide what to do
+about it, in the order it gets read: who, how to reach them, what they asked
+for.
+
+The payment screenshot is named and never attached -- see notify_new_booking.
+{% endcomment %}
+
+{% block subject %}New booking: {{ appointment.name }}{% endblock %}
+
+{% block preheader %}
+  {{ appointment.name }} booked {{ appointment.service.label|default:"an appointment" }}{% if appointment.barber %} with {{ appointment.barber.name }}{% endif %}.
+{% endblock %}
+
+{% block header_note %}New booking{% endblock %}
+{% block eyebrow %}Booking request{% endblock %}
+{% block heading %}{{ appointment.name }}{% endblock %}
+
+{% block subheading %}
+  <tr>
+    <td style="padding-top:10px;">
+      {% comment %}
+      A badge, built the only way a mail client will draw one: a table cell
+      with padding and a background. inline-block padding is unreliable in
+      Outlook; a cell is not.
+      {% endcomment %}
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td bgcolor="#1e1e1e" style="background-color:#1e1e1e;border:1px solid #2b2b2b;border-radius:999px;padding:5px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:14px;font-weight:600;letter-spacing:0.6px;color:#a6a6a6;text-transform:uppercase;">
+            {{ appointment.get_status_display }}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+{% endblock %}
+
+{% block content %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    {% include "email/_row.html" with label="Phone" value=appointment.phone accent=False %}
+    {% include "email/_row.html" with label="Email" value=appointment.email accent=False %}
+    {% include "email/_row.html" with label="Address" value=appointment.address accent=False %}
+    {% include "email/_row.html" with label="Service" value=appointment.service.label accent=False %}
+    {% include "email/_row.html" with label="Barber" value=appointment.barber.name accent=False %}
+    {% include "email/_row.html" with label="Reference" value=appointment.reference accent=True %}
+  </table>
+
+  {% if appointment.notes %}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:6px 0 20px 0;">
+      <tr>
+        <td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border:1px solid #262626;border-radius:8px;padding:14px 16px;">
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:11px;line-height:16px;font-weight:600;letter-spacing:0.6px;color:#a6a6a6;text-transform:uppercase;padding-bottom:6px;">
+            Notes from the customer
+          </div>
+          {% comment %}
+          linebreaksbr, not linebreaks. The `linebreaks` filter wraps each
+          paragraph in a bare <p>, and a <p> carries whatever margin the
+          client feels like: Word's in Outlook desktop, its own in
+          Outlook.com, none at all in a few. <br> is the one construct every
+          client agrees on, and a blank line still reads as a paragraph break.
+          Autoescaping applies either way -- this is text a stranger submitted
+          through a public form.
+          {% endcomment %}
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#ffffff;">
+            {{ appointment.notes|linebreaksbr }}
+          </div>
+        </td>
+      </tr>
+    </table>
+  {% endif %}
+
+  {% if appointment.payment_screenshot %}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 20px 0;">
+      <tr>
+        <td style="border-left:2px solid #c7ff3d;padding:2px 0 2px 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#a6a6a6;">
+          A payment screenshot was uploaded. It is a financial record kept
+          behind a signed URL, so it is not attached here &#8212; open the
+          booking in the admin to view it.
+        </td>
+      </tr>
+    </table>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  Sent automatically when a booking is submitted on the website.
+  {% if appointment.email %}Reply to this email to answer {{ appointment.name }} directly.{% endif %}
+{% endblock %}

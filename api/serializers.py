@@ -22,7 +22,6 @@ from sections.models import (
     AsSeenOnSection,
     ClassCard,
     ClassesSection,
-    ContactColumn,
     FollowUsSection,
     FooterSection,
     GalleryImage,
@@ -42,10 +41,14 @@ from sections.models import (
 
 class SiteSettingsSerializer(CamelCaseModelSerializer):
     nav_cta = LinkField("nav_cta_label", "nav_cta_href")
+    # "" when neither the upload nor the override is set, which is what the
+    # header reads as "no logo, draw the wordmark instead".
+    logo = ImageURLField("logo", "logo_url")
 
     class Meta:
         model = SiteSettings
         fields = [
+            "logo",
             "brand_name",
             "badge_caption",
             "meta_title",
@@ -212,16 +215,6 @@ class FollowUsSerializer(CamelCaseModelSerializer):
     class Meta:
         model = FollowUsSection
         fields = ["heading", "body"]
-
-
-class ContactColumnSerializer(CamelCaseModelSerializer):
-    # The design's line breaks carry meaning (they set each column's width), so
-    # the API hands over the lines rather than one blob for the client to split.
-    lines = serializers.ListField(child=serializers.CharField(), read_only=True)
-
-    class Meta:
-        model = ContactColumn
-        fields = ["id", "heading", "icon", "lines", "order"]
 
 
 class FooterSerializer(CamelCaseModelSerializer):

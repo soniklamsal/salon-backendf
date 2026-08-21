@@ -176,10 +176,16 @@ class GallerySerializer(CamelCaseModelSerializer):
 
 class ClassCardSerializer(CamelCaseModelSerializer):
     image = ImageURLField("image", "image_url")
+    # `{}` rather than null for a card with no clip, so the frontend branches
+    # on one shape instead of two. See ClassCard.video.
+    video = serializers.SerializerMethodField()
 
     class Meta:
         model = ClassCard
-        fields = ["id", "slug", "name", "href", "image", "order"]
+        fields = ["id", "slug", "name", "href", "image", "video", "order"]
+
+    def get_video(self, obj) -> dict:
+        return obj.video()
 
 
 class ClassesSerializer(CamelCaseModelSerializer):

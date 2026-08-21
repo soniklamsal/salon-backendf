@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html, format_html_join
+from django.utils.safestring import mark_safe
 
 from common.admin import ColorInput, ImagePreviewMixin, SingletonAdmin
 from common.admin_ajax import AdminAjaxMixin
@@ -210,12 +211,55 @@ class GallerySectionAdmin(SingletonAdmin):
     fields = ("heading", "body", ("cta_label", "cta_href"), "is_published")
 
 
-class ClassCardInline(admin.TabularInline):
+class ClassCardInline(admin.StackedInline):
+    """The cards, edited on the section page they belong to.
+
+    Stacked rather than tabular: a card carries a photo, a photo URL and a
+    video URL, and a table row cannot hold that many columns without
+    truncating them — which is how fields ended up being left off the row and
+    then not being findable on the page where the work actually happens.
+    """
+
     model = ClassCard
     extra = 0
-    fields = ("name", "slug", "href", "image", "image_url", "order", "is_published")
+    readonly_fields = ("clip",)
     prepopulated_fields = {"slug": ("name",)}
     ordering = ("order", "pk")
+    fieldsets = (
+        (None, {"fields": (("name", "slug"), "href", ("order", "is_published"))}),
+        (
+            "Photo",
+            {
+                "fields": (("image", "image_url"),),
+                "description": "Used when this card has no video URL below.",
+            },
+        ),
+        (
+            "Video",
+            {
+                "fields": ("clip", "video_url"),
+                "description": (
+                    "Paste the address of a hosted clip — a Cloudinary video "
+                    "URL, or any direct .mp4 or .m3u8 link. <b>It replaces the "
+                    "photo above</b> while it is filled in; empty it and the "
+                    "photo comes back."
+                ),
+            },
+        ),
+    )
+
+    @admin.display(description="Currently")
+    def clip(self, obj):
+        """What this card is showing, so the photo/video swap is not a guess."""
+        if obj is None or obj.pk is None:
+            return "—"
+        if obj.video_url:
+            return format_html(
+                'Playing this clip: <a href="{}" target="_blank">{}</a>',
+                obj.video_url,
+                obj.video_url,
+            )
+        return "No clip — this card shows its photo"
 
 
 @admin.register(ClassesSection)
@@ -234,16 +278,55 @@ class ClassCardAdmin(AdminAjaxMixin, ImagePreviewMixin, admin.ModelAdmin):
     search_fields = ("name", "slug")
     ordering = ("order", "pk")
     prepopulated_fields = {"slug": ("name",)}
-    readonly_fields = ("preview",)
-    fields = (
-        "section",
-        "name",
-        "slug",
-        "href",
-        "preview",
-        ("image", "image_url"),
-        ("order", "is_published"),
+    readonly_fields = ("preview", "video_preview")
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "section",
+                    "name",
+                    "slug",
+                    "href",
+                    "preview",
+                    ("image", "image_url"),
+                    ("order", "is_published"),
+                )
+            },
+        ),
+        (
+            "Video",
+            {
+                "description": (
+                    "Paste the address of a clip hosted somewhere else — a "
+                    "Cloudinary video URL, or any direct .mp4 or .m3u8 link. "
+                    "<br><br><b>A clip replaces the photo on this card.</b> "
+                    "Fill this in and the photo above stops being used; empty "
+                    "it and the photo comes back. Nothing needs clearing."
+                ),
+                "fields": ("video_preview", "video_url"),
+            },
+        ),
     )
+
+    @admin.display(description="Current clip")
+    def video_preview(self, obj):
+        """The clip itself, so a pasted address can be checked before saving
+        twice. A URL that does not play here will not play on the site."""
+        if obj is None or obj.pk is None:
+            return mark_safe('<span class="salon-preview--empty">Save first</span>')
+
+        if obj.video_url:
+            return format_html(
+                '<div class="salon-preview"><video src="{}" controls muted '
+                'playsinline style="width:320px;border-radius:6px"></video></div>',
+                obj.video_url,
+            )
+
+        return mark_safe(
+            '<span class="salon-preview--empty">No clip — this card shows its '
+            "photo</span>"
+        )
 
 
 @admin.register(OurStorySection)

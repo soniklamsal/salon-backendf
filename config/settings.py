@@ -16,18 +16,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
-
 def env(name: str, default: str = "") -> str:
     return os.environ.get(name, default)
-
 
 def env_bool(name: str, default: bool = False) -> bool:
     return env(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
 
-
 def env_list(name: str, default: str = "") -> list[str]:
     return [item.strip() for item in env(name, default).split(",") if item.strip()]
-
 
 # The fallback is fine for local development only; .env.example explains how to
 # generate a real one. DEBUG=False with the fallback still in place is refused
@@ -40,7 +36,6 @@ ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 
 # Used to build absolute media URLs when no request is in hand.
 PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", "").rstrip("/")
-
 
 INSTALLED_APPS = [
     # Must precede django.contrib.admin — Jazzmin overrides the admin templates.
@@ -137,7 +132,6 @@ def _database_from_url(url: str) -> dict:
         }
 
     return config
-
 
 DATABASE_URL = env("DATABASE_URL")
 
@@ -279,7 +273,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # account. See common/testing.py.
 TEST_RUNNER = "common.testing.SalonTestRunner"
 
-
 # --- API -------------------------------------------------------------------
 
 REST_FRAMEWORK = {
@@ -342,7 +335,6 @@ CSRF_TRUSTED_ORIGINS = [
     origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith("https://")
 ]
 
-
 # --- Email (SMTP) ----------------------------------------------------------
 # Off by default. Without EMAIL_HOST_USER and EMAIL_HOST_PASSWORD, mail is
 # written to stdout instead of sent, which is what a fresh clone and the test
@@ -361,10 +353,8 @@ CSRF_TRUSTED_ORIGINS = [
 def email_env(name: str, default: str = "") -> str:
     return env(name).strip() or default
 
-
 def email_env_bool(name: str, default: bool) -> bool:
     return env_bool(name, default) if env(name).strip() else default
-
 
 EMAIL_HOST = email_env("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(email_env("EMAIL_PORT", "587"))
@@ -424,11 +414,9 @@ SALON_NOTIFY_EMAILS = env_list("SALON_NOTIFY_EMAILS") or (
     [EMAIL_HOST_USER] if EMAIL_HOST_USER else []
 )
 
-
 # --- Admin -----------------------------------------------------------------
 
 from config.jazzmin import JAZZMIN_SETTINGS, JAZZMIN_UI_TWEAKS  # noqa: E402,F401
-
 
 # --- Production guardrails -------------------------------------------------
 
@@ -467,7 +455,6 @@ if not DEBUG:
     # and getting off it takes months.
     SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", False)
 
-
 # --- Logging ---------------------------------------------------------------
 # Without this, a failure in the booking path in production goes nowhere at
 # all. Everything goes to stdout, which is what a process manager or container
@@ -495,6 +482,8 @@ LOGGING = {
         },
     },
     "root": {"handlers": ["console"], "level": "WARNING"},
+    # `_LOG_HANDLERS` below adds a rotating file in production. See the note
+    # under LOGGING for why stdout alone is not enough on shared hosting.
     "loggers": {
         "django": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         # Pinned, not inherited: `django` at DEBUG makes this echo every SQL
@@ -516,3 +505,51 @@ LOGGING = {
         "common": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
     },
 }
+
+# --- Logging to a file, in production only ---------------------------------
+#
+# The console handler above is right for a container runtime, which collects
+# stdout. Shared hosting is not that. Under Passenger, stdout lands in a log
+# the panel may rotate, truncate or simply not surface, and the practical
+# effect is that a booking that failed at 9pm on Saturday leaves no trace
+# anybody can find on Monday.
+#
+# So production also writes to a rotating file the salon's host can be pointed
+# at. Deliberately modest: 5 files of 5MB, which is months of a site this size
+# and cannot fill a shared-hosting quota.
+#
+# DJANGO_LOG_DIR overrides the location, because some cPanel accounts make the
+# application directory read-only and the writable path is elsewhere. Set it
+# to a directory outside the web root -- a log of 500s is not something to
+# serve to the public.
+#
+# Failure to open the file must never stop the site booting: a salon that
+# cannot take a booking because a log directory is read-only is a worse
+# outcome than a site with no file log.
+
+if not DEBUG:
+    _LOG_DIR = Path(env("DJANGO_LOG_DIR", str(BASE_DIR / "logs")))
+    try:
+        _LOG_DIR.mkdir(parents=True, exist_ok=True)
+        _probe = _LOG_DIR / ".write-test"
+        _probe.touch()
+        _probe.unlink()
+    except OSError:
+        _LOG_DIR = None
+
+    if _LOG_DIR is not None:
+        LOGGING["handlers"]["file"] = {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(_LOG_DIR / "salon.log"),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+            # WARNING and above only. INFO here would be one line per request
+            # and would rotate the interesting entries out within a day.
+            "level": "WARNING",
+        }
+        LOGGING["root"]["handlers"].append("file")
+        for _logger in LOGGING["loggers"].values():
+            if "file" not in _logger["handlers"]:
+                _logger["handlers"] = [*_logger["handlers"], "file"]

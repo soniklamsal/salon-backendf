@@ -1450,3 +1450,9 @@ a.salon-bell-item:hover {
 .salon-bell-sound.is-muted {
   color: var(--salon-destructive);
 }
+
+/* Inline warning inside a field's help text — used when a feature the field
+   depends on is not configured, where the field itself still has to work. */
+.salon-warning {
+  color: var(--salon-warning-text);
+}

@@ -351,6 +351,30 @@ class ClassesSection(SingletonModel):
         return "Classes"
 
 
+def _cloudinary_poster(url: str) -> str:
+    """A still from a Cloudinary video, by asking Cloudinary for it as an image.
+
+    Cloudinary renders a frame of any video it holds if the delivery URL asks
+    for a picture format, so swapping the extension for `.jpg` on a
+    `/video/upload/` address gives a poster frame with nothing extra to upload
+    and nothing extra to store.
+
+    Returns "" for anything that is not such a URL -- a direct .mp4 on someone
+    else's server has no equivalent trick, and guessing one would produce a
+    broken `poster` attribute rather than no poster at all.
+    """
+    if "res.cloudinary.com" not in url or "/video/upload/" not in url:
+        return ""
+
+    head, _, tail = url.rpartition("/")
+    if not head:
+        return ""
+    # A Cloudinary public id may carry no extension at all, in which case the
+    # suffix is appended rather than swapped.
+    stem = tail.rsplit(".", 1)[0] if "." in tail else tail
+    return f"{head}/{stem}.jpg" if stem else ""
+
+
 class ClassCard(OrderedModel):
     """One card in the Classes grid.
 
@@ -374,12 +398,55 @@ class ClassCard(OrderedModel):
         help_text="Used when no file is uploaded. The seeded cards point at Cloudinary.",
     )
 
+    # --- Video ---
+    # A clip plays in place of the still, with the still as its poster frame.
+    # The image stays required in practice for that reason: it is what fills
+    # the card for the second before the video has enough buffered to start,
+    # and what a visitor with data-saver on sees instead of the clip.
+    #
+    # A clip is a URL and nothing else. There is deliberately no upload here.
+    #
+    # There used to be: a FileField writing to classes/video/, and a Cloudflare
+    # Stream id beside it. Both are gone. Uploading meant a second storage
+    # service to configure before the field did anything, and it put video
+    # files in the backend that the salon then had to think about -- which is
+    # not what a link needs. Pasting an address costs nothing to set up, works
+    # with any host, and leaves this project storing no video at all.
+    video_url = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="Video URL",
+        help_text=(
+            "The address of a clip hosted somewhere else -- a Cloudflare or "
+            "Cloudinary video URL, or any direct .mp4 or .m3u8 link. While "
+            "this is filled in it replaces the photo on this card."
+        ),
+    )
+
     class Meta(OrderedModel.Meta):
         verbose_name = "Class card"
         verbose_name_plural = "Class cards"
 
     def __str__(self):
         return self.name.replace("\n", " ")
+
+    def video(self) -> dict:
+        """What the API hands the frontend for this card's clip, or {}.
+
+        One source: the pasted address. Nothing is stored by this project, so
+        there is nothing else to check.
+
+        A card is a photo or a clip and never both, so a clip has no photo
+        behind it while it buffers -- which is why a thumbnail is derived
+        where one can be had.
+        """
+        if not self.video_url:
+            return {}
+        return {
+            "uid": "",
+            "src": self.video_url,
+            "thumbnail": _cloudinary_poster(self.video_url),
+        }
 
 
 class OurStorySection(SingletonModel):

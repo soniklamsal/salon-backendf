@@ -105,19 +105,18 @@ MOTIVATION_LINES = [
 # happening in the picture. Every card points at /services, because the band's
 # job is to get someone into the booking flow rather than to a page per card.
 #
-# The Cloudinary paths are still the devis-gym demo's bucket: those are
-# photographs of a gym, and no salon equivalents have been supplied yet.
-# Swapping `image_url` in the admin is all that is left to finish this band;
-# nothing else references these URLs.
+# Images now use the gallery images from /images/dribbble/ to match the
+# "Our Speciality" section above. These are local frontend images that display
+# until updated through the admin with real salon photos.
 CLASS_CARDS = [
-    ("fresh-cut", "Fresh\nCut", "/services", "v1786269602/devis-gym/people/DSC07734.JPG.webp"),
-    ("sharp-fade", "Sharp\nFade", "/services", "v1786269452/devis-gym/people/DSC07615-4.JPG.webp"),
-    ("beard-work", "Beard\nWork", "/services", "v1786269591/devis-gym/people/DSC07629-3.JPG.webp"),
-    ("wash-style", "Wash &\nStyle", "/services", "v1786269637/devis-gym/people/DSC07636-3.JPG.webp"),
-    ("colour-day", "Colour\nDay", "/services", "v1786268875/devis-gym/people/DSC07385.JPG.webp"),
-    ("clean-lines", "Clean\nLines", "/services", "v1786269241/devis-gym/people/DSC07541.JPG.webp"),
-    ("finishing-touch", "Finishing\nTouch", "/services", "v1786268706/devis-gym/classes/OutdoorActivities.webp"),
-    ("book-your-seat", "Book\nYour Seat", "/services", "v1786269681/devis-gym/people/DSC07643-3.JPG.webp"),
+    ("fresh-cut", "Fresh\nCut", "/services", "/images/dribbble/first.jpeg"),
+    ("sharp-fade", "Sharp\nFade", "/services", "/images/dribbble/second.jpeg"),
+    ("beard-work", "Beard\nWork", "/services", "/images/dribbble/third.jpeg"),
+    ("wash-style", "Wash &\nStyle", "/services", "/images/dribbble/fourth.jpeg"),
+    ("colour-day", "Colour\nDay", "/services", "/images/dribbble/fifth.jpeg"),
+    ("clean-lines", "Clean\nLines", "/services", "/images/dribbble/sixth.jpeg"),
+    ("finishing-touch", "Finishing\nTouch", "/services", "/images/dribbble/first.jpeg"),
+    ("book-your-seat", "Book\nYour Seat", "/services", "/images/dribbble/second.jpeg"),
 ]
 
 # bookings.Barber — step 2 of the booking flow needs at least one row or the
@@ -256,7 +255,7 @@ class Command(BaseCommand):
                     "slug": slug,
                     "name": name,
                     "href": href,
-                    "image_url": CLOUDINARY_BASE + path,
+                    "image_url": path if path.startswith("/") else CLOUDINARY_BASE + path,
                     "order": i,
                 }
                 for i, (slug, name, href, path) in enumerate(CLASS_CARDS)

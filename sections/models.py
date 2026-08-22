@@ -278,8 +278,8 @@ class GallerySection(SingletonModel):
             "phone, where the measure is too narrow to break by hand."
         ),
     )
-    cta_label = models.CharField(max_length=60, default="View Gallery")
-    cta_href = models.CharField(max_length=200, default="#")
+    cta_label = models.CharField(max_length=60, default="View Services")
+    cta_href = models.CharField(max_length=200, default="/services")
     is_published = models.BooleanField(
         default=True, help_text="Untick to drop the whole band from the page."
     )

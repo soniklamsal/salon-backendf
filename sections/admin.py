@@ -453,10 +453,7 @@ class AboutColumnInline(admin.TabularInline):
 
 
 @admin.register(AboutSection)
-class AboutSectionAdmin(ImagePreviewMixin, SingletonAdmin):
-    # Preview is deprecated - only used for hero_bg_image which is no longer used
-    preview_fields = [("hero_bg_image", "hero_bg_image_url")]
-    readonly_fields = ("preview",)
+class AboutSectionAdmin(SingletonAdmin):
     inlines = [AboutColumnInline, AboutStatInline, TeamMemberInline]
     fieldsets = (
         (
@@ -492,22 +489,6 @@ class AboutSectionAdmin(ImagePreviewMixin, SingletonAdmin):
                     "title (split across 2 lines), date, and animated scroll "
                     "indicators (mouse icon + down arrow) when scroll prompt is filled."
                 ),
-            },
-        ),
-        (
-            "Deprecated hero fields",
-            {
-                "fields": (
-                    "preview",
-                    "hero_bg_image",
-                    "hero_bg_image_url",
-                ),
-                "description": (
-                    "These fields are no longer used in the frontend. The hero now "
-                    "uses video only with a dark overlay. These are kept for "
-                    "backward compatibility but have no effect on the live site."
-                ),
-                "classes": ("collapse",),
             },
         ),
         ("Team heading", {"fields": ("team_heading", "team_body")}),

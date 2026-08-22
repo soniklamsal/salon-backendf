@@ -585,15 +585,21 @@ class AboutSection(SingletonModel):
         ),
     )
 
-    # --- Scroll-expand hero ---
-    hero_title = models.CharField(max_length=160, default="Beauty Salon Experience")
+    # --- Simple video hero ---
+    hero_title = models.CharField(
+        max_length=160,
+        default="AJ SALON EXPERIENCE",
+        help_text="Main heading displayed on the video hero (split across 2 lines).",
+    )
     hero_date = models.CharField(
         max_length=160,
         default="In Kathmandu since 2018",
-        help_text="Small line under the hero title.",
+        help_text="Subtitle displayed under the hero title.",
     )
     hero_scroll_prompt = models.CharField(
-        max_length=160, default="Scroll to Explore Our Salon"
+        max_length=160,
+        default="Scroll to Explore Our Salon",
+        help_text="Text prompt shown with animated mouse icon and down arrow. Leave filled to show scroll indicators, or clear to hide them.",
     )
     hero_video = models.FileField(
         upload_to="about/video/",
@@ -618,15 +624,16 @@ class AboutSection(SingletonModel):
             "used. Only fill this in to point at a video hosted somewhere else."
         ),
     )
-    hero_bg_image = models.ImageField(upload_to="about/", blank=True)
+    hero_bg_image = models.ImageField(
+        upload_to="about/",
+        blank=True,
+        help_text="DEPRECATED: No longer used in the frontend. The hero now uses video only with a dark overlay for text readability.",
+    )
     hero_bg_image_url = models.CharField(
         max_length=500,
         blank=True,
-        default=(
-            "https://res.cloudinary.com/ufiebboc/image/upload/v1786268716/"
-            "devis-gym/devis/IMG_7361.JPG.jpg"
-        ),
-        help_text=IMAGE_URL_HELP,
+        default="",
+        help_text="DEPRECATED: No longer used in the frontend. The hero now uses video only.",
     )
 
     # --- Intro block ---

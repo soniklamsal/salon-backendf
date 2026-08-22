@@ -454,6 +454,7 @@ class AboutColumnInline(admin.TabularInline):
 
 @admin.register(AboutSection)
 class AboutSectionAdmin(ImagePreviewMixin, SingletonAdmin):
+    # Preview is deprecated - only used for hero_bg_image which is no longer used
     preview_fields = [("hero_bg_image", "hero_bg_image_url")]
     readonly_fields = ("preview",)
     inlines = [AboutColumnInline, AboutStatInline, TeamMemberInline]
@@ -475,7 +476,7 @@ class AboutSectionAdmin(ImagePreviewMixin, SingletonAdmin):
         ),
         ("Open since", {"fields": ("established_year",)}),
         (
-            "Scroll hero",
+            "Simple video hero",
             {
                 "fields": (
                     "hero_title",
@@ -483,16 +484,30 @@ class AboutSectionAdmin(ImagePreviewMixin, SingletonAdmin):
                     "hero_scroll_prompt",
                     "hero_video",
                     "hero_video_url",
+                ),
+                "description": (
+                    "Full-screen video hero with text overlay. No GSAP animations, "
+                    "works consistently across all devices. The video plays in the "
+                    "background with a dark overlay for text readability. Shows "
+                    "title (split across 2 lines), date, and animated scroll "
+                    "indicators (mouse icon + down arrow) when scroll prompt is filled."
+                ),
+            },
+        ),
+        (
+            "Deprecated hero fields",
+            {
+                "fields": (
                     "preview",
                     "hero_bg_image",
                     "hero_bg_image_url",
                 ),
                 "description": (
-                    "Three separate slots. The background image fills the "
-                    "screen on arrival and fades out as the visitor scrolls, "
-                    "and also stands in for the video while it loads. The "
-                    "video is the clip that expands."
+                    "These fields are no longer used in the frontend. The hero now "
+                    "uses video only with a dark overlay. These are kept for "
+                    "backward compatibility but have no effect on the live site."
                 ),
+                "classes": ("collapse",),
             },
         ),
         ("Team heading", {"fields": ("team_heading", "team_body")}),

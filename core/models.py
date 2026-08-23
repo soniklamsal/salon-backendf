@@ -66,7 +66,7 @@ class SiteSettings(SingletonModel):
     nav_cta_href = models.CharField(max_length=200, default="/services")
 
     copyright_text = models.CharField(
-        max_length=200, default="2026 Salon All rights reserved"
+        max_length=200, default="© 2026 AJ Salon. All rights reserved."
     )
 
     # The eSewa QR and its note used to live here. They moved to

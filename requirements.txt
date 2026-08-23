@@ -15,3 +15,5 @@ psycopg[binary]>=3.2
 mysqlclient>=2.2.0
 # Requests for Clerk API calls
 requests>=2.32
+# WSGI HTTP Server for production
+gunicorn>=21.2

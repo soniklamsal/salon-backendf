@@ -1,0 +1,47 @@
+services:
+  # Django Backend Web Service
+  - type: web
+    name: salon-backend
+    runtime: python
+    plan: free  # Change to 'starter' or higher for production
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: False
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false  # Set manually in Render dashboard
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false  # Set manually in Render dashboard
+      - key: PUBLIC_BASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: DATABASE_URL
+        fromDatabase:
+          name: salon-db
+          property: connectionString
+      - key: CLERK_ISSUER
+        sync: false  # Set manually in Render dashboard
+      - key: CLERK_SECRET_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: SALON_NOTIFY_EMAILS
+        sync: false
+
+  # PostgreSQL Database
+  - type: pserv
+    name: salon-db
+    plan: free  # Change to 'starter' or higher for production
+    ipAllowList: []  # Required for free tier

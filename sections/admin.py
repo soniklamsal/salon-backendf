@@ -478,15 +478,13 @@ class AboutSectionAdmin(SingletonAdmin):
                 "fields": (
                     "hero_title",
                     "hero_date",
-                    "hero_scroll_prompt",
                     "hero_video_url",
                 ),
                 "description": (
                     "Full-screen video hero with text overlay. No GSAP animations, "
                     "works consistently across all devices. The video plays in the "
                     "background with a dark overlay for text readability. Shows "
-                    "title (split across 2 lines), date, and animated scroll "
-                    "indicators (mouse icon + down arrow) when scroll prompt is filled. "
+                    "title (split across 2 lines) and date. "
                     "Paste the video URL from Cloudinary or any other hosting service."
                 ),
             },

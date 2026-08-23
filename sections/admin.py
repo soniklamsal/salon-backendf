@@ -479,7 +479,6 @@ class AboutSectionAdmin(SingletonAdmin):
                     "hero_title",
                     "hero_date",
                     "hero_scroll_prompt",
-                    "hero_video",
                     "hero_video_url",
                 ),
                 "description": (
@@ -487,7 +486,8 @@ class AboutSectionAdmin(SingletonAdmin):
                     "works consistently across all devices. The video plays in the "
                     "background with a dark overlay for text readability. Shows "
                     "title (split across 2 lines), date, and animated scroll "
-                    "indicators (mouse icon + down arrow) when scroll prompt is filled."
+                    "indicators (mouse icon + down arrow) when scroll prompt is filled. "
+                    "Paste the video URL from Cloudinary or any other hosting service."
                 ),
             },
         ),

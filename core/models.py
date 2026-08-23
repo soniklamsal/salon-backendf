@@ -36,7 +36,7 @@ class SiteSettings(SingletonModel):
 
     brand_name = models.CharField(
         max_length=60,
-        default="SALON",
+        default="AJ Salon",
         help_text=(
             "The wordmark. Shown in the header and the mobile menu only when "
             "no logo is uploaded above — but the badge always uses it, and it "

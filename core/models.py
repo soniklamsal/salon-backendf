@@ -52,7 +52,7 @@ class SiteSettings(SingletonModel):
 
     meta_title = models.CharField(
         max_length=200,
-        default="Salon — Always Make Room for a Little Beauty in Your Life",
+        default="AJ Salon — Always Make Room for a Little Beauty in Your Life",
         help_text="Browser tab title and the default social-share title.",
     )
     meta_description = models.TextField(

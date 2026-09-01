@@ -585,11 +585,11 @@ class AboutSection(SingletonModel):
         ),
     )
 
-    # --- Simple video hero ---
+    # --- Simple image hero ---
     hero_title = models.CharField(
         max_length=160,
         default="AJ SALON EXPERIENCE",
-        help_text="Main heading displayed on the video hero (split across 2 lines).",
+        help_text="Main heading displayed on the hero (split across 2 lines).",
     )
     hero_date = models.CharField(
         max_length=160,
@@ -601,39 +601,23 @@ class AboutSection(SingletonModel):
         default="Scroll to Explore Our Salon",
         help_text="Text prompt shown with animated mouse icon and down arrow. Leave filled to show scroll indicators, or clear to hide them.",
     )
-    hero_video = models.FileField(
-        upload_to="about/video/",
+    hero_image = models.ImageField(
+        upload_to="about/hero/",
         blank=True,
-        storage=video_storage,
-        validators=[validate_video_upload],
         help_text=(
-            "Upload the clip here. It goes to Cloudinary when the account is "
+            "Upload the hero image here. It goes to Cloudinary when the account is "
             "configured, and to the local media folder otherwise. An upload "
             "always wins over the URL below."
         ),
     )
-    hero_video_url = models.CharField(
-        max_length=500,
-        blank=True,
-        default=(
-            "https://res.cloudinary.com/ufiebboc/video/upload/f_auto,q_auto/"
-            "hfjpk00y9fqeznekhrh9"
-        ),
-        help_text=(
-            "Leave empty if you uploaded a file above -- the upload is always "
-            "used. Only fill this in to point at a video hosted somewhere else."
-        ),
-    )
-    hero_bg_image = models.ImageField(
-        upload_to="about/",
-        blank=True,
-        help_text="DEPRECATED: No longer used in the frontend. The hero now uses video only with a dark overlay for text readability.",
-    )
-    hero_bg_image_url = models.CharField(
+    hero_image_url = models.CharField(
         max_length=500,
         blank=True,
         default="",
-        help_text="DEPRECATED: No longer used in the frontend. The hero now uses video only.",
+        help_text=(
+            "Leave empty if you uploaded a file above -- the upload is always "
+            "used. Only fill this in to point at an image hosted somewhere else."
+        ),
     )
 
     # --- Intro block ---

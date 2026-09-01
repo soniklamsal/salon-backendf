@@ -573,10 +573,7 @@ class TeamMemberSerializer(CamelCaseModelSerializer):
 
 
 class AboutSerializer(CamelCaseModelSerializer):
-    hero_bg_image = ImageURLField("hero_bg_image", "hero_bg_image_url")
-    # Same (upload, url) collapse the images get: the field resolves whichever
-    # of the two is set, so the frontend still receives one plain string.
-    hero_video_url = ImageURLField("hero_video", "hero_video_url")
+    hero_image = ImageURLField("hero_image", "hero_image_url")
     intro_body = serializers.SerializerMethodField()
     columns = serializers.SerializerMethodField()
     stats = serializers.SerializerMethodField()
@@ -590,8 +587,7 @@ class AboutSerializer(CamelCaseModelSerializer):
             "hero_title",
             "hero_date",
             "hero_scroll_prompt",
-            "hero_video_url",
-            "hero_bg_image",
+            "hero_image",
             "eyebrow",
             "heading_line_1",
             "heading_line_2",

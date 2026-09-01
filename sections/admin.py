@@ -473,19 +473,19 @@ class AboutSectionAdmin(SingletonAdmin):
         ),
         ("Open since", {"fields": ("established_year",)}),
         (
-            "Simple video hero",
+            "Simple image hero",
             {
                 "fields": (
                     "hero_title",
                     "hero_date",
-                    "hero_video_url",
+                    "hero_scroll_prompt",
+                    "hero_image",
+                    "hero_image_url",
                 ),
                 "description": (
-                    "Full-screen video hero with text overlay. No GSAP animations, "
-                    "works consistently across all devices. The video plays in the "
-                    "background with a dark overlay for text readability. Shows "
-                    "title (split across 2 lines) and date. "
-                    "Paste the video URL from Cloudinary or any other hosting service."
+                    "Full-screen image hero with text overlay. Upload an image or provide a URL. "
+                    "The image displays in the background with a dark overlay for text readability. "
+                    "Shows title (split across 2 lines), date, and scroll indicators."
                 ),
             },
         ),

@@ -9,7 +9,7 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from bookings.models import Appointment, Barber, BookingSection, ContactMessage
+from bookings.models import Appointment, Barber, BookingSection, ContactMessage, TimeSlot
 from common.serializers import CamelCaseModelSerializer, ImageURLField, LinkField
 from common.storage import screenshot_token
 from common.validators import validate_phone, validate_upload
@@ -288,6 +288,24 @@ class BarberSerializer(CamelCaseModelSerializer):
         ]
 
 
+class TimeSlotSerializer(CamelCaseModelSerializer):
+    """Serializer for time slots - shows availability for booking."""
+    
+    time_label = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = TimeSlot
+        fields = [
+            'id',
+            'date',
+            'start_time',
+            'end_time',
+            'time_label',
+            'is_booked',
+            'order',
+        ]
+
+
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     # No date or time is accepted here, deliberately. The salon decides when a
     # customer comes in and sets it in the admin's Handling section; the
@@ -369,6 +387,7 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
             "address",
             "service",
             "barber",
+            "time_slot",  # Add time_slot field
             "notes",
             "paymentScreenshot",
             # Read-only: assigned by the model, echoed back so the customer
@@ -445,9 +464,26 @@ class MyBookingSerializer(CamelCaseModelSerializer):
     service = serializers.CharField(source="service.label", default="", read_only=True)
     barber = serializers.CharField(source="barber.name", default="", read_only=True)
     status_label = serializers.CharField(source="get_status_display", read_only=True)
+    
+    # Selected time slot information
+    selected_time_slot = serializers.SerializerMethodField()
+    
     # Not the file's own URL — it no longer has a reachable one. This points at
     # the view that checks the caller owns the booking before producing it.
     payment_screenshot = serializers.SerializerMethodField()
+    
+    def get_selected_time_slot(self, obj):
+        """Return the customer's selected time slot info."""
+        if not obj.time_slot:
+            return None
+        
+        ts = obj.time_slot
+        return {
+            "date": ts.date.isoformat() if ts.date else None,
+            "timeLabel": ts.time_label,  # camelCase for frontend
+            "startTime": ts.start_time.isoformat() if ts.start_time else None,
+            "endTime": ts.end_time.isoformat() if ts.end_time else None,
+        }
 
     def get_payment_screenshot(self, obj) -> str:
         """The authorising endpoint, carrying a signed token.
@@ -481,8 +517,10 @@ class MyBookingSerializer(CamelCaseModelSerializer):
             "address",
             "notes",
             "payment_screenshot",
+            # Customer's selected time slot
+            "selected_time_slot",
             # The one and only time on this record: what the salon set in the
-            # admin. Null until the booking is approved.
+            # admin. Null until the booking is approved (or can be set by admin)
             "scheduled_date",
             "scheduled_time",
             "approved_at",

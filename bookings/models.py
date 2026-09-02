@@ -246,6 +246,55 @@ class Barber(OrderedModel, TimeStampedModel):
         return self.unavailable_note or "Not available"
 
 
+class TimeSlot(OrderedModel, TimeStampedModel):
+    """A bookable time slot for a barber.
+    
+    Created manually in the admin for each barber. Can be marked as booked
+    or unbooked, allowing the salon to control availability.
+    """
+    
+    barber = models.ForeignKey(
+        Barber,
+        on_delete=models.CASCADE,
+        related_name='time_slots',
+        help_text="Which barber this time slot is for"
+    )
+    date = models.DateField(
+        help_text="Which day this slot is available (YYYY-MM-DD)"
+    )
+    start_time = models.TimeField(
+        help_text="Start time of this slot (e.g., 10:00)"
+    )
+    end_time = models.TimeField(
+        help_text="End time of this slot (e.g., 11:00)"
+    )
+    is_booked = models.BooleanField(
+        default=False,
+        help_text="Check to mark this slot as booked (unavailable for customers)"
+    )
+    
+    class Meta(OrderedModel.Meta):
+        verbose_name = "Time Slot"
+        verbose_name_plural = "Time Slots"
+        ordering = ['barber', 'date', 'start_time', 'order']
+        # Prevent duplicate slots for same barber at same time
+        constraints = [
+            models.UniqueConstraint(
+                fields=['barber', 'date', 'start_time', 'end_time'],
+                name='unique_barber_date_time_slot'
+            )
+        ]
+    
+    def __str__(self):
+        status = "Booked" if self.is_booked else "Available"
+        return f"{self.barber.name} - {self.date} {self.start_time.strftime('%H:%M')}-{self.end_time.strftime('%H:%M')} ({status})"
+    
+    @property
+    def time_label(self) -> str:
+        """Format time range for display, e.g., '10:00 AM - 11:00 AM'"""
+        return f"{label_time(self.start_time)} – {label_time(self.end_time)}"
+
+
 class Appointment(TimeStampedModel):
     class Status(models.TextChoices):
         """The life of a booking, in order.
@@ -289,6 +338,17 @@ class Appointment(TimeStampedModel):
         related_name="appointments",
         help_text="Kept if the barber later leaves, so the record survives.",
     )
+    
+    # Link to the specific time slot this appointment is for
+    time_slot = models.ForeignKey(
+        "bookings.TimeSlot",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="appointments",
+        help_text="The time slot selected for this appointment"
+    )
+    
     # Retired. The booking form used to ask the customer when they would like
     # to come; it no longer does, because the salon decides the time. Kept
     # because older rows still carry what was asked, and `approve()` promotes
@@ -445,15 +505,9 @@ class Appointment(TimeStampedModel):
         SQLite it is a no-op, but SQLite already serialises every write.
         """
         with transaction.atomic():
-            # Confirming a booking means telling the customer when to come, so
-            # approval is the point the schedule has to exist. Staff who typed
-            # one in Handling keep it; everyone else accepts what was asked
-            # for, which is what they were agreeing to by approving.
-            if self.scheduled_date is None:
-                self.scheduled_date = self.preferred_date
-            if self.scheduled_time is None:
-                self.scheduled_time = self.preferred_time
-
+            # Customer selected their time slot during booking - no need to copy
+            # preferred dates anymore since the time_slot field contains their choice
+            
             if not self.order_id:
                 year = timezone.now().year
                 prefix = f"ORD-{year}-"

@@ -41,8 +41,9 @@ from api.serializers import (
     ServiceSerializer,
     SiteSettingsSerializer,
     SocialLinkSerializer,
+    TimeSlotSerializer,
 )
-from bookings.models import Appointment, Barber, BookingSection, ClerkProfile
+from bookings.models import Appointment, Barber, BookingSection, ClerkProfile, TimeSlot
 from common.cache import cached_payload
 from common.throttling import MyBookingsThrottle, ScreenshotThrottle
 from common.clerk import user_from_request
@@ -203,6 +204,50 @@ class ServiceViewSet(ReadOnlyPublishedViewSet):
 class BarberViewSet(ReadOnlyPublishedViewSet):
     model = Barber
     serializer_class = BarberSerializer
+    
+    from rest_framework.decorators import action
+    
+    @action(detail=True, methods=['get'], url_path='time-slots')
+    def time_slots(self, request, pk=None):
+        """Get available time slots for a specific barber.
+        
+        GET /api/v1/barbers/{id}/time-slots/?date=2026-09-02
+        
+        Returns all time slots for the barber on the specified date,
+        showing which ones are available and which are booked.
+        """
+        from datetime import datetime
+        
+        barber = self.get_object()
+        date_str = request.query_params.get('date')
+        
+        if not date_str:
+            return Response({
+                'error': 'date parameter is required (format: YYYY-MM-DD)'
+            }, status=400)
+        
+        try:
+            slot_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=400)
+        
+        # Get all time slots for this barber on this date
+        slots = TimeSlot.objects.filter(
+            barber=barber,
+            date=slot_date,
+            is_published=True
+        ).order_by('start_time', 'order')
+        
+        serializer = TimeSlotSerializer(slots, many=True, context={'request': request})
+        
+        return Response({
+            'barber_id': barber.id,
+            'barber_name': barber.name,
+            'date': date_str,
+            'slots': serializer.data
+        })
 
 
 @api_view(["GET"])

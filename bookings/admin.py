@@ -13,6 +13,7 @@ from bookings.models import (
     ClerkProfile,
     ContactMessage,
     Service,
+    TimeSlot,
     label_time,
 )
 from common.admin import SingletonAdmin
@@ -142,6 +143,23 @@ def use_time_dropdown(form, field_name, blank_label):
     field.widget = forms.Select(choices=choices)
 
 
+class TimeSlotInline(admin.TabularInline):
+    """Manage time slots directly from the Barber admin page."""
+    
+    model = TimeSlot
+    extra = 1
+    fields = ('date', 'start_time', 'end_time', 'is_booked', 'order', 'is_published')
+    ordering = ['date', 'start_time', 'order']
+    verbose_name = "Time Slot"
+    verbose_name_plural = "Time Slots (Create bookable time slots here)"
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Show upcoming slots first, then past
+        from django.utils import timezone
+        return qs.filter(date__gte=timezone.now().date()).order_by('date', 'start_time', 'order')
+
+
 class BarberAdminForm(forms.ModelForm):
     """Working hours are picked from the salon's slots, not typed."""
 
@@ -172,6 +190,7 @@ class BarberAdmin(AdminAjaxMixin, admin.ModelAdmin):
     ajax_refresh_cells = ("availability", "is_available", "is_published")
 
     form = BarberAdminForm
+    inlines = [TimeSlotInline]  # Add time slots inline
     list_display = (
         "name",
         "role",
@@ -242,6 +261,47 @@ class BarberAdmin(AdminAjaxMixin, admin.ModelAdmin):
         )
 
 
+@admin.register(TimeSlot)
+class TimeSlotAdmin(admin.ModelAdmin):
+    """Standalone admin for managing all time slots across all barbers."""
+    
+    list_display = ('barber', 'date', 'time_range', 'booking_status', 'is_booked', 'is_published', 'order')
+    list_filter = ('barber', 'date', 'is_booked', 'is_published')
+    search_fields = ('barber__name',)
+    list_editable = ('is_booked', 'is_published', 'order')
+    date_hierarchy = 'date'
+    ordering = ['date', 'start_time']
+    
+    fieldsets = (
+        ('Time Slot Details', {
+            'fields': ('barber', 'date', 'start_time', 'end_time')
+        }),
+        ('Availability', {
+            'fields': ('is_booked',),
+            'description': 'Check "Is booked" to mark this slot as unavailable for customer booking.'
+        }),
+        ('Placement', {
+            'fields': ('is_published', 'order')
+        }),
+    )
+    
+    @admin.display(description="Time Range")
+    def time_range(self, obj):
+        return obj.time_label
+    
+    @admin.display(description="Status")
+    def booking_status(self, obj):
+        if obj.is_booked:
+            return format_html('<span style="color:#c0392b;font-weight:bold">● Booked</span>')
+        return format_html('<span style="color:#1b5e20;font-weight:bold">● Available</span>')
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Show upcoming slots first
+        from django.utils import timezone
+        return qs.filter(date__gte=timezone.now().date())
+
+
 class AppointmentAdminForm(forms.ModelForm):
     """Adds the visit-time dropdown to the stock appointment form."""
 
@@ -303,6 +363,7 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         "clerk_user_id",
         "reference",
         "order_id",
+        "selected_time_display",
         "approved_at",
         "completed_at",
     )
@@ -321,13 +382,17 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         (
             "What",
             {
-                # No date or time here: the customer does not choose one. The
-                # visit time is set under Handling below.
+                # Customer's selection including their chosen time slot
                 "fields": (
                     "service",
                     "barber",
+                    "selected_time_display",
                     "notes",
-                )
+                ),
+                "description": (
+                    "The customer's booking request. The time slot they selected "
+                    "is shown here for your reference."
+                ),
             },
         ),
         (
@@ -345,8 +410,6 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
             "Handling",
             {
                 "fields": (
-                    "scheduled_date",
-                    "scheduled_time",
                     "status",
                     "reference",
                     "order_id",
@@ -356,16 +419,13 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
                     "updated_at",
                 ),
                 "description": (
-                    "<b>Set the date and time you want the customer to come "
-                    "in.</b> They see it on their bookings page the moment you "
-                    "approve, so it is the time they will turn up. Leave both "
-                    "empty to accept whatever they asked for under "
-                    "<i>What</i> — approving copies it across.<br><br>"
-                    "Then use the actions on the list page to move the booking "
+                    "Use the actions on the list page to move the booking "
                     "along: <b>Approve</b> checks out the payment and issues "
                     "the order ID the customer shows at the salon; "
                     "<b>Mark completed</b> is for after the cut. The order ID "
-                    "is generated once and never changes."
+                    "is generated once and never changes.<br><br>"
+                    "The customer will come at the time slot they selected "
+                    "above. They can see this on their bookings page after approval."
                 ),
             },
         ),
@@ -441,8 +501,14 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         the changelist — an approved booking with no time is a customer who
         has paid and has not been told when to turn up.
         """
-        # `preferred_*` is only ever set on bookings made when the form still
-        # asked; it is shown so those do not look timeless.
+        # Show the selected time slot if available
+        if obj.time_slot:
+            return format_html(
+                "<b>{}</b>",
+                f"{obj.time_slot.date.strftime('%d %b')} {obj.time_slot.time_label}"
+            )
+        
+        # Fallback to old scheduled/preferred fields for legacy bookings
         date = obj.scheduled_date or obj.preferred_date
         time = obj.scheduled_time or obj.preferred_time
         if not date and not time:
@@ -457,6 +523,23 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
             if part
         )
         return format_html("<b>{}</b>", when)
+    
+    @admin.display(description="Time slot selected by customer")
+    def selected_time_display(self, obj):
+        """Show the customer's selected time slot in readable format."""
+        if not obj.time_slot:
+            return format_html('<span style="color:#888">— no time slot selected —</span>')
+        
+        ts = obj.time_slot
+        return format_html(
+            '<div style="padding:10px;background:#f0f7ff;border-left:4px solid #2196F3;border-radius:4px">'
+            '<div style="font-weight:bold;font-size:14px;color:#1976D2;margin-bottom:4px">'
+            '{}</div>'
+            '<div style="color:#555;font-size:13px">{}</div>'
+            '</div>',
+            ts.date.strftime('%A, %B %d, %Y'),  # e.g., "Monday, September 01, 2026"
+            ts.time_label  # e.g., "4:00 pm – 5:00 pm"
+        )
 
     @admin.display(boolean=True, description="Proof")
     def paid(self, obj):
@@ -490,11 +573,13 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         would leave every row in the selection with the same number.
         """
         issued = []
-        timeless = []
+        no_time_slot = []
+        
         for booking in queryset.exclude(status=Appointment.Status.CANCELLED):
             issued.append(f"{booking.name}: {booking.approve()}")
-            if not booking.scheduled_date and not booking.scheduled_time:
-                timeless.append(booking.name)
+            # Warn if no time slot was selected (old bookings or edge cases)
+            if not booking.time_slot:
+                no_time_slot.append(booking.name)
 
         if not issued:
             self.message_user(request, "Nothing to approve (cancelled bookings skipped).")
@@ -508,16 +593,15 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
                 ", ".join(issued),
             ),
         )
-        if timeless:
-            # Approved, but the customer's page will say "we will call to
-            # agree a time" — worth saying out loud rather than leaving
-            # someone to notice the blank later.
+        
+        if no_time_slot:
+            # Rare case: booking without a selected time slot
             self.message_user(
                 request,
                 format_html(
-                    "No visit time set for {} — open the booking and fill in "
-                    "the Handling date and time, or call them.",
-                    ", ".join(timeless),
+                    "No time slot selected for {} — this may be an old booking "
+                    "made before time slot selection was available.",
+                    ", ".join(no_time_slot),
                 ),
                 level=messages.WARNING,
             )

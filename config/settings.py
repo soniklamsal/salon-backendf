@@ -244,7 +244,11 @@ MAX_UPLOAD_PIXELS = int(env("MAX_UPLOAD_PIXELS", str(50_000_000)))
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # Not WhiteNoise's storage directly: a forgiving subclass, because the
+        # Jazzmin admin base template does `{% static 'vendor/bootswatch' %}` on
+        # a directory, which the strict manifest turns into a 500 on every admin
+        # page under DEBUG=False. See common/static_storage.py.
+        "BACKEND": "common.static_storage.ForgivingManifestStaticFilesStorage",
     },
 }
 

@@ -1,0 +1,4 @@
+# Shell scripts must keep LF endings even when edited on Windows: build.sh runs
+# on Render's Linux, and a CRLF here fails the build with "bad interpreter".
+*.sh text eol=lf
+build.sh text eol=lf

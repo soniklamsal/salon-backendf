@@ -34,6 +34,14 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 
+# Render sets this to the service's own <name>.onrender.com hostname. Adding it
+# here means the first deploy answers on that URL without anyone having to read
+# the hostname out of the dashboard and set DJANGO_ALLOWED_HOSTS by hand -- the
+# DisallowedHost that otherwise greets every first Render deploy.
+_RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME", "")
+if _RENDER_HOST and _RENDER_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_RENDER_HOST)
+
 # Used to build absolute media URLs when no request is in hand.
 PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", "").rstrip("/")
 
@@ -339,6 +347,12 @@ CORS_ALLOW_CREDENTIALS = False
 CSRF_TRUSTED_ORIGINS = [
     origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith("https://")
 ]
+# The admin is served from the backend's own origin, so that origin has to be
+# trusted for its login POST -- and behind Render's TLS-terminating proxy the
+# same-origin shortcut is not always enough. Cheap to add, and it removes a
+# 403 on the very first admin sign-in.
+if _RENDER_HOST:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_RENDER_HOST}")
 
 # --- Email (SMTP) ----------------------------------------------------------
 # Off by default. Without EMAIL_HOST_USER and EMAIL_HOST_PASSWORD, mail is

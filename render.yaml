@@ -1,3 +1,14 @@
+# Render Blueprint. Point Render at this repo (New -> Blueprint) and it creates
+# the web service and the database below together.
+#
+# Managed Postgres is declared under this top-level `databases:` key -- NOT as a
+# `type: pserv` service. A `pserv` is a private Docker service with no image
+# here; declaring the database that way fails to deploy and leaves the web
+# service's `fromDatabase` reference pointing at nothing.
+databases:
+  - name: salon-db
+    plan: free  # Free Postgres sleeps and is capped; raise for real traffic.
+
 services:
   # Django Backend Web Service
   - type: web
@@ -8,17 +19,27 @@ services:
     startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.7
+        value: "3.12.7"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
-        value: False
+        value: "False"
+      # ALLOWED_HOSTS already includes this service's own onrender.com host
+      # automatically (settings reads RENDER_EXTERNAL_HOSTNAME). Set this only
+      # to add a custom domain, e.g. api.ajunisexsalon.com.
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false  # Set manually in Render dashboard
+        sync: false
+      # The frontend origins the browser calls this API from. MUST include the
+      # live site, both apex and www, or the booking form cannot reach the API
+      # once a customer is on the real domain:
+      #   https://ajunisexsalon.com,https://www.ajunisexsalon.com
       - key: CORS_ALLOWED_ORIGINS
-        sync: false  # Set manually in Render dashboard
+        sync: false
+      # This service's own public URL, for building absolute links (emails,
+      # screenshots) when no request is in hand. e.g.
+      #   https://salon-backend.onrender.com
       - key: PUBLIC_BASE_URL
-        sync: false  # Set manually in Render dashboard
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: salon-db
@@ -28,7 +49,7 @@ services:
       # in Vercel: if the two differ, sign-in still appears to work and every
       # booking is recorded anonymously, with nothing in the browser to say so.
       # `sync: false` rather than `generateValue: true` for exactly that reason
-      # — a generated value could never match the frontend's.
+      # -- a generated value could never match the frontend's.
       - key: SALON_AUTH_SECRET
         sync: false
       # Recorded so the admin can tell which Google project the accounts belong
@@ -50,9 +71,13 @@ services:
         sync: false
       - key: SALON_NOTIFY_EMAILS
         sync: false
-
-  # PostgreSQL Database
-  - type: pserv
-    name: salon-db
-    plan: free  # Change to 'starter' or higher for production
-    ipAllowList: []  # Required for free tier
+      # Admin bootstrap. build.sh creates (or refreshes) this superuser on each
+      # deploy from these three, so the login always exists on a fresh database.
+      # Kept out of the repo -- set them in the dashboard. Leave them unset and
+      # build.sh simply skips the step.
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

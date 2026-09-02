@@ -60,18 +60,26 @@ class Migration(migrations.Migration):
 
     operations = [
         # 1. Columns, without the unique constraint yet.
+        #
+        # No `db_index=True` here even though step 3 makes these unique. On
+        # Postgres a CharField index is really two -- a btree and a `_like`
+        # pattern index -- and creating one now (db_index) and then adding
+        # `unique=True` in step 3 makes Django try to create the same `_like`
+        # index twice, which aborts the whole migration with "relation ...
+        # already exists". SQLite builds no pattern index, so it never showed
+        # this locally. `unique=True` alone, added in step 3, builds the index
+        # once; the final field the model declares is `unique=True` with no
+        # `db_index`, so nothing downstream changes.
         migrations.AddField(
             model_name="appointment",
             name="reference",
-            field=models.CharField(blank=True, db_index=True, default="", max_length=16),
+            field=models.CharField(blank=True, default="", max_length=16),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="appointment",
             name="order_id",
-            field=models.CharField(
-                blank=True, db_index=True, max_length=20, null=True
-            ),
+            field=models.CharField(blank=True, max_length=20, null=True),
         ),
         migrations.AddField(
             model_name="appointment",
@@ -99,13 +107,13 @@ class Migration(migrations.Migration):
         ),
         # 2. Populate, so no two rows share a value.
         migrations.RunPython(fill_in, back_out),
-        # 3. Now the constraints can hold.
+        # 3. Now the constraints can hold. `unique=True` builds the index on
+        #    every backend; no `db_index=True` alongside it -- see step 1.
         migrations.AlterField(
             model_name="appointment",
             name="reference",
             field=models.CharField(
                 blank=True,
-                db_index=True,
                 help_text="Shown to the customer on submit. Generated automatically.",
                 max_length=16,
                 unique=True,
@@ -116,7 +124,6 @@ class Migration(migrations.Migration):
             name="order_id",
             field=models.CharField(
                 blank=True,
-                db_index=True,
                 help_text="Created automatically on approval. Blank until then.",
                 max_length=20,
                 null=True,

@@ -7,7 +7,7 @@ fixed on the throttle instead, which is the same thing DRF's own
 `AnonRateThrottle` does.
 
 Keyed by IP rather than by account. Neither endpoint requires a Django session
--- `my_bookings` identifies the caller by a verified Clerk claim and
+-- `my_bookings` identifies the caller by a verified Google claim and
 `payment_screenshot` accepts a signed token -- so `request.user` is not the
 thing to count, and an unauthenticated caller is exactly who these are for.
 

@@ -15,7 +15,13 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
-from bookings.models import Appointment, Barber, BookingSection, ContactMessage
+from bookings.models import (
+    Appointment,
+    Barber,
+    BookingSection,
+    ContactMessage,
+    TimeSlot,
+)
 from common.testing import admin_static_storage
 
 User = get_user_model()
@@ -34,10 +40,10 @@ class AdminAccessTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response["Location"])
 
-    def test_a_mirrored_clerk_user_cannot_log_in(self):
+    def test_a_mirrored_google_user_cannot_log_in(self):
         """They have no usable password, so this must fail rather than land."""
-        User.objects.create(username="clerk_user_abc").set_unusable_password()
-        logged_in = self.client.login(username="clerk_user_abc", password="")
+        User.objects.create(username="google_user_abc").set_unusable_password()
+        logged_in = self.client.login(username="google_user_abc", password="")
         self.assertFalse(logged_in)
 
 
@@ -56,6 +62,18 @@ class ApprovalActionTests(TestCase):
                 "_selected_action": [str(b.pk) for b in bookings],
             },
             follow=True,
+        )
+
+    def a_slot(self):
+        """One bookable slot, of the kind a customer picks in the form."""
+        from datetime import date, time
+
+        barber = Barber.objects.create(name="Kiran")
+        return TimeSlot.objects.create(
+            barber=barber,
+            date=date(2026, 9, 1),
+            start_time=time(14, 0),
+            end_time=time(15, 0),
         )
 
     def test_approve_issues_order_ids_to_the_selection(self):
@@ -109,23 +127,30 @@ class ApprovalActionTests(TestCase):
         self.assertEqual(booking.status, Appointment.Status.COMPLETED)
         self.assertIsNotNone(booking.completed_at)
 
-    def test_approving_warns_when_no_visit_time_was_set(self):
-        """Otherwise the blank is only noticed when the customer asks."""
+    def test_approving_warns_when_no_time_slot_was_chosen(self):
+        """Otherwise the blank is only noticed when the customer asks.
+
+        The customer picks their slot in the booking form, so a booking with
+        none is either a legacy row or one entered by phone. Either way the
+        salon has approved somebody without telling them when to come.
+        """
         booking = Appointment.objects.create(name="No time given")
         response = self.run_action("approve_bookings", [booking])
-        self.assertIn("No visit time set", response.content.decode())
+        self.assertIn("No time slot selected", response.content.decode())
 
-    def test_no_warning_when_a_visit_time_was_set(self):
-        from datetime import date, time
-
-        booking = Appointment.objects.create(
-            name="Asha", scheduled_date=date(2026, 9, 1), scheduled_time=time(10, 0)
-        )
+    def test_no_warning_when_the_customer_chose_a_slot(self):
+        booking = Appointment.objects.create(name="Asha", time_slot=self.a_slot())
         response = self.run_action("approve_bookings", [booking])
-        self.assertNotIn("No visit time set", response.content.decode())
+        self.assertNotIn("No time slot selected", response.content.decode())
 
-    def test_the_form_does_not_offer_a_customer_requested_time(self):
-        """The retired fields must not come back as editable inputs."""
+    def test_the_form_does_not_offer_a_typed_in_time(self):
+        """The retired fields must not come back as editable inputs.
+
+        `preferred_*` and `scheduled_*` are both legacy columns now: the time a
+        customer comes in is `time_slot`, which they chose themselves. The
+        admin shows it, read-only, rather than offering a second time for staff
+        to type and disagree with.
+        """
         from bookings.admin import AppointmentAdmin
 
         offered = {
@@ -135,28 +160,22 @@ class ApprovalActionTests(TestCase):
         }
         self.assertNotIn("preferred_date", offered)
         self.assertNotIn("preferred_time", offered)
-        self.assertIn("scheduled_date", offered)
-        self.assertIn("scheduled_time", offered)
+        self.assertNotIn("scheduled_date", offered)
+        self.assertNotIn("scheduled_time", offered)
+        self.assertIn("selected_time_display", offered)
+        self.assertIn("selected_time_display", AppointmentAdmin.readonly_fields)
 
-    def test_staff_can_set_the_visit_time(self):
-        booking = Appointment.objects.create(name="Asha")
-        self.client.post(
-            reverse("admin:bookings_appointment_change", args=[booking.pk]),
-            {
-                "name": "Asha",
-                "email": "",
-                "phone": "",
-                "address": "",
-                "notes": "",
-                "status": Appointment.Status.PENDING,
-                "scheduled_date": "2026-09-01",
-                "scheduled_time": "11:00",
-            },
-            follow=True,
-        )
-        booking.refresh_from_db()
-        self.assertEqual(str(booking.scheduled_date), "2026-09-01")
-        self.assertEqual(str(booking.scheduled_time), "11:00:00")
+    def test_the_customers_chosen_slot_is_what_the_admin_shows(self):
+        """The visit time is the slot the customer picked, not a staff entry."""
+        slot = self.a_slot()
+        booking = Appointment.objects.create(name="Asha", time_slot=slot)
+
+        body = self.client.get(
+            reverse("admin:bookings_appointment_change", args=[booking.pk])
+        ).content.decode()
+
+        self.assertIn(slot.time_label, body)
+        self.assertIn(slot.date.strftime("%A, %B %d, %Y"), body)
 
     def test_the_message_reports_what_was_skipped(self):
         approved = Appointment.objects.create(name="Ready")
@@ -274,7 +293,7 @@ class AppointmentAdminDisplayTests(TestCase):
         """They are issued by the system; typing one in would break the count."""
         from bookings.admin import AppointmentAdmin
 
-        for field in ("reference", "order_id", "clerk_user_id", "approved_at"):
+        for field in ("reference", "order_id", "google_user_id", "approved_at"):
             self.assertIn(field, AppointmentAdmin.readonly_fields)
 
 
@@ -374,35 +393,31 @@ class VisitTimeDropdownTests(TestCase):
         booking.refresh_from_db()
         self.assertEqual(booking.scheduled_time, time(3, 14))
 
-    def test_a_chosen_slot_saves(self):
+    def test_a_chosen_slot_is_a_valid_value_for_the_field(self):
+        """The dropdown must accept what it offers.
+
+        Asserted through the form rather than a POST: `scheduled_time` is a
+        legacy column and is no longer on any fieldset, so the change screen
+        does not render it and a POST would prove nothing about the widget.
+        """
         from datetime import time
 
-        booking = Appointment.objects.create(name="Asha")
-        self.client.post(
-            reverse("admin:bookings_appointment_change", args=[booking.pk]),
-            {
-                "name": "Asha",
-                "email": "",
-                "phone": "",
-                "address": "",
-                "notes": "",
-                "status": Appointment.Status.PENDING,
-                "scheduled_date": "2026-09-01",
-                "scheduled_time": "14:30:00",
-            },
-            follow=True,
+        form = self.form_for()
+        self.assertIn("14:30:00", [value for value, _ in self.options()])
+        self.assertEqual(
+            form.fields["scheduled_time"].clean("14:30:00"), time(14, 30)
         )
-        booking.refresh_from_db()
-        self.assertEqual(booking.scheduled_time, time(14, 30))
 
     def test_the_existing_value_is_preselected(self):
-        """A dropdown that renders unselected looks like the time was lost."""
+        """A dropdown that renders unselected looks like the time was lost.
+
+        Read off the bound form: the field is legacy and no longer rendered on
+        the change screen, so scraping that page would assert nothing.
+        """
         from datetime import time
 
         booking = Appointment.objects.create(name="Asha", scheduled_time=time(14, 30))
-        body = self.client.get(
-            reverse("admin:bookings_appointment_change", args=[booking.pk])
-        ).content.decode()
+        body = str(self.form_for(booking)["scheduled_time"])
         self.assertIn('value="14:30:00" selected', body)
 
 
@@ -562,7 +577,7 @@ class RowActionTests(TestCase):
         """It is the whole reason the bulk action is reused rather than copied."""
         body = self.post(action="approve_bookings", pk=self.booking.pk).json()
         texts = " ".join(m["text"] for m in body["messages"])
-        self.assertIn("No visit time set", texts)
+        self.assertIn("No time slot selected", texts)
 
     def test_the_response_re_renders_the_status_pill(self):
         body = self.post(action="approve_bookings", pk=self.booking.pk).json()

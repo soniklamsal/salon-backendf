@@ -353,7 +353,7 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
         },
     )
     # Read-only: the customer does not type this. It is taken from the account
-    # they signed up with, via the verified Clerk token, and the form shows it
+    # they signed up with, via the verified session token, and the form shows it
     # as a non-editable field. Accepting one from the body would let a caller
     # attach any address they liked to a booking made from their own account.
     email = serializers.EmailField(read_only=True)
@@ -489,7 +489,7 @@ class MyBookingSerializer(CamelCaseModelSerializer):
         """The authorising endpoint, carrying a signed token.
 
         This serializer is only ever reached through `my_bookings`, which has
-        already matched the booking against a verified Clerk session — so
+        already matched the booking against a verified Google session — so
         minting the token here is handing it to someone who has just proved
         the booking is theirs. The token is what lets the `<img>` that follows
         load it, since a browser sends no Authorization header for those.

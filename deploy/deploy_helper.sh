@@ -78,7 +78,7 @@ activate_venv() {
 check_env_file() {
     if [ ! -f "$APP_DIR/.env" ]; then
         print_error ".env file not found!"
-        print_info "Copy .env.production.example to .env and configure it"
+        print_info "Copy .env.example to .env and configure it"
         exit 1
     fi
     print_success ".env file exists"

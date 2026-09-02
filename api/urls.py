@@ -19,7 +19,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("booking-config/", views.booking_config, name="booking-config"),
     path("my-bookings/", views.my_bookings, name="my-bookings"),
-    # The reference selects the booking; the Clerk token in the header decides
+    # The reference selects the booking; the session token in the header decides
     # whether the caller may see it. See views.payment_screenshot.
     path(
         "bookings/<str:reference>/screenshot/",

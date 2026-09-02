@@ -27,7 +27,11 @@ class HomepageTests(TestCase):
 
     def test_defaults_are_the_shipped_copy(self):
         payload = self.client.get(reverse("homepage")).json()
-        self.assertEqual(payload["site"]["brandName"], "SALON")
+        # Read from the field rather than repeated here: the salon renamed
+        # itself once already, and a literal in the test only records what the
+        # default used to be.
+        default = SiteSettings._meta.get_field("brand_name").default
+        self.assertEqual(payload["site"]["brandName"], default)
 
     def test_keys_are_camel_case(self):
         payload = self.client.get(reverse("homepage")).json()
@@ -146,7 +150,7 @@ class SiteLogoTests(TestCase):
         row = SiteSettings.load()
         row.logo_url = "https://cdn.example.com/logo.svg"
         row.save()
-        self.assertEqual(self.site()["brandName"], "SALON")
+        self.assertEqual(self.site()["brandName"], row.brand_name)
 
 
 class BookingConfigTests(TestCase):

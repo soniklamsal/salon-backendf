@@ -48,7 +48,7 @@ class ScreenshotAccessTests(TestCase):
 
         self.booking = Appointment.objects.create(
             name="Asha",
-            clerk_user_id="user_owner",
+            google_user_id="user_owner",
             payment_screenshot=SimpleUploadedFile(
                 "proof.png", _png().read(), content_type="image/png"
             ),
@@ -98,7 +98,7 @@ class ScreenshotAccessTests(TestCase):
         self.assertEqual(self.client.get(self.url).status_code, 404)
 
     def test_booking_without_a_screenshot_is_404(self):
-        empty = Appointment.objects.create(name="No proof", clerk_user_id="user_owner")
+        empty = Appointment.objects.create(name="No proof", google_user_id="user_owner")
         url = reverse("payment-screenshot", kwargs={"reference": empty.reference})
         with patch("api.views.user_from_request", return_value={"sub": "user_owner"}):
             response = self.client.get(url, HTTP_AUTHORIZATION="Bearer x")
@@ -170,14 +170,14 @@ class ScreenshotTokenTests(TestCase):
 
         self.booking = Appointment.objects.create(
             name="Asha",
-            clerk_user_id="user_owner",
+            google_user_id="user_owner",
             payment_screenshot=SimpleUploadedFile(
                 "proof.png", _png().read(), content_type="image/png"
             ),
         )
         self.other = Appointment.objects.create(
             name="Bim",
-            clerk_user_id="user_other",
+            google_user_id="user_other",
             payment_screenshot=SimpleUploadedFile(
                 "proof2.png", _png().read(), content_type="image/png"
             ),
@@ -230,7 +230,7 @@ class ScreenshotTokenTests(TestCase):
                 "p.png", _png().read(), content_type="image/png"
             ),
         )
-        self.assertEqual(orphan.clerk_user_id, "")
+        self.assertEqual(orphan.google_user_id, "")
         with patch("api.views.user_from_request", return_value={"sub": ""}):
             response = self.client.get(
                 self.url_for(orphan), HTTP_AUTHORIZATION="Bearer x"

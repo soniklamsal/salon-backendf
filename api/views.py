@@ -10,6 +10,7 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db import DatabaseError, IntegrityError, transaction
 from django.http import FileResponse, Http404, HttpResponseRedirect
+from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -43,10 +44,10 @@ from api.serializers import (
     SocialLinkSerializer,
     TimeSlotSerializer,
 )
-from bookings.models import Appointment, Barber, BookingSection, ClerkProfile, TimeSlot
+from bookings.models import Appointment, Barber, BookingSection, GoogleProfile, TimeSlot
 from common.cache import cached_payload
+from common.google_auth import user_from_request
 from common.throttling import MyBookingsThrottle, ScreenshotThrottle
-from common.clerk import user_from_request
 from common.notifications import (
     notify_new_booking,
     notify_new_contact_message,
@@ -305,11 +306,12 @@ class SocialLinkViewSet(ReadOnlyPublishedViewSet):
 
 
 def _ensure_account_visible(claims):
-    """Create a stub Users row for a Clerk account not mirrored yet.
+    """Mirror a Google account into Django's Users, and mark it seen.
 
-    Deliberately minimal — id and email only. `manage.py sync_clerk_users`
-    fills in the provider, avatar and timestamps from Clerk itself, which is
-    the only place that knows them.
+    Everything stored comes from claims that `common.google_auth` has already
+    verified. There is no back-end call to Google to enrich it: unlike Clerk,
+    Google publishes no "list my users" API, so a sign-in is the only moment
+    this information exists and this is the only place it is captured.
 
     Two things this must not do. It must not raise: mirroring an account is a
     convenience for the admin sidebar, and a customer who has just paid should
@@ -318,30 +320,58 @@ def _ensure_account_visible(claims):
     and the loser died on the unique constraint. `get_or_create` inside a
     savepoint makes the database settle it.
     """
-    clerk_id = claims.get("sub")
-    if not clerk_id:
+    google_id = claims.get("sub")
+    if not google_id:
         return
 
     try:
         with transaction.atomic():
-            if ClerkProfile.objects.filter(clerk_user_id=clerk_id).exists():
+            profile = GoogleProfile.objects.filter(google_user_id=google_id).first()
+            if profile is not None:
+                # Already mirrored. The only thing worth refreshing is when we
+                # last heard from them - `update` rather than `save()` so two
+                # concurrent bookings cannot clobber each other's fields.
+                GoogleProfile.objects.filter(pk=profile.pk).update(
+                    last_seen_at=timezone.now()
+                )
                 return
 
             User = get_user_model()
             user, created = User.objects.get_or_create(
-                username=f"clerk_{clerk_id[-24:]}",
+                username=f"google_{google_id[-24:]}",
                 defaults={"email": claims.get("email") or ""},
             )
             if created:
                 user.set_unusable_password()
                 user.save(update_fields=["password"])
-            ClerkProfile.objects.get_or_create(
-                clerk_user_id=clerk_id, defaults={"user": user}
+            GoogleProfile.objects.get_or_create(
+                google_user_id=google_id,
+                defaults={
+                    "user": user,
+                    "image_url": claims.get("picture") or "",
+                    "email_verified": bool(claims.get("email_verified")),
+                    "last_seen_at": timezone.now(),
+                },
             )
     except (IntegrityError, DatabaseError):
         # Lost the race to a concurrent request, which means the row it was
         # going to create now exists. Nothing to do and nothing to report.
-        logger.info("Clerk account mirror skipped for %s (already created)", clerk_id)
+        logger.info("Google account mirror skipped for %s (already created)", google_id)
+
+
+def _never_cached(response):
+    """Stop anything between here and the customer from keeping a copy.
+
+    These responses are one person's bookings and one person's payment
+    screenshot. With no Cache-Control at all -- which is what these sent before
+    -- an intermediary is free to apply its own heuristic freshness to a 200,
+    and a shared proxy or a browser's back/forward cache can then hand one
+    customer's data to whoever asks next on the same connection. `private`
+    alone is not enough: it permits a browser-local copy that survives sign-out
+    on a shared machine, so `no-store` is the operative half.
+    """
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    return response
 
 
 @api_view(["GET"])
@@ -349,7 +379,7 @@ def _ensure_account_visible(claims):
 def my_bookings(request, format=None):
     """The signed-in customer's own bookings.
 
-    The filter is the `sub` claim of a *verified* Clerk token — never a query
+    The filter is the `sub` claim of a *verified* session token — never a query
     parameter or a header the caller controls — so there is no id to tamper
     with and no way to ask for somebody else's list.
 
@@ -358,21 +388,23 @@ def my_bookings(request, format=None):
     would make that a console error on every anonymous page load.
     """
     claims = user_from_request(request) or {}
-    clerk_id = claims.get("sub")
-    if not clerk_id:
-        return Response({"bookings": []})
+    google_id = claims.get("sub")
+    if not google_id:
+        return _never_cached(Response({"bookings": []}))
 
     queryset = (
-        Appointment.objects.filter(clerk_user_id=clerk_id)
-        .select_related("service", "barber")
+        Appointment.objects.filter(google_user_id=google_id)
+        .select_related("service", "barber", "time_slot")
         .order_by("-created_at")
     )
-    return Response(
-        {
-            "bookings": MyBookingSerializer(
-                queryset, many=True, context={"request": request}
-            ).data
-        }
+    return _never_cached(
+        Response(
+            {
+                "bookings": MyBookingSerializer(
+                    queryset, many=True, context={"request": request}
+                ).data
+            }
+        )
     )
 
 
@@ -390,7 +422,7 @@ def payment_screenshot(request, reference, format=None):
     Three callers are allowed through:
 
     * the customer who made the booking, identified by the `sub` claim of a
-      *verified* Clerk token. The reference in the URL is not the credential;
+      *verified* session token. The reference in the URL is not the credential;
       it selects the row, and the token decides whether that row is yours.
       Knowing somebody else's reference gets you a 404.
     * a signed-in Django staff user, which is how the salon checks a payment
@@ -420,11 +452,11 @@ def payment_screenshot(request, reference, format=None):
 
     if not allowed:
         claims = user_from_request(request) or {}
-        clerk_id = claims.get("sub")
-        # `clerk_user_id` is "" on bookings made before sign-in existed, so the
+        google_id = claims.get("sub")
+        # `google_user_id` is "" on bookings made before sign-in existed, so the
         # first half of this matters: an empty claim must not match an empty
         # column and let an anonymous caller through.
-        allowed = bool(clerk_id) and clerk_id == booking.clerk_user_id
+        allowed = bool(google_id) and google_id == booking.google_user_id
 
     if not allowed:
         # Same 404 as a missing booking — see the docstring.
@@ -433,7 +465,9 @@ def payment_screenshot(request, reference, format=None):
     signed = signed_url(booking.payment_screenshot.name)
     if signed:
         # Cloudinary: hand over a signed URL rather than proxying the bytes.
-        return HttpResponseRedirect(signed)
+        # The redirect carries a short-lived credential in its Location header,
+        # so it must not be cached any more than the image itself.
+        return _never_cached(HttpResponseRedirect(signed))
 
     # Local private storage: stream it, because nothing else can reach it.
     try:
@@ -441,7 +475,7 @@ def payment_screenshot(request, reference, format=None):
     except (FileNotFoundError, OSError):
         logger.warning("Screenshot missing on disk for %s", booking.reference)
         raise NotFound("No screenshot for that booking.")
-    return FileResponse(handle, content_type="image/*")
+    return _never_cached(FileResponse(handle, content_type="image/*"))
 
 
 class AppointmentCreateView(CreateAPIView):
@@ -456,33 +490,34 @@ class AppointmentCreateView(CreateAPIView):
     throttle_scope = "bookings"
 
     def perform_create(self, serializer):
-        """Stamp the booking with the *verified* Clerk user, if there is one.
+        """Stamp the booking with the *verified* Google user, if there is one.
 
         The claims come from the signed session token, not from the request
-        body — `clerk_user_id` is not a serializer field, so a client cannot
+        body — `google_user_id` is not a serializer field, so a client cannot
         post one and claim to be somebody else. The email is overwritten from
         the token for the same reason.
 
         A request with no valid token still succeeds, anonymously. Gating the
         booking page is the frontend's job; refusing here as well would mean a
-        Clerk outage, or an expired tab, silently loses a real customer.
+        sign-in outage, or an expired tab, silently loses a real customer.
         """
         claims = user_from_request(self.request) or {}
         extra = {}
         if claims.get("sub"):
-            extra["clerk_user_id"] = claims["sub"]
+            extra["google_user_id"] = claims["sub"]
             # Always from the token, never from the body. The form shows this
             # address as a read-only field taken from the account, so the only
             # way a different one could arrive here is a caller editing the
             # request — and `email` is read-only on the serializer for exactly
             # that reason.
-            token_email = claims.get("email") or claims.get("primary_email_address")
+            # Only present when Google reported the address as verified —
+            # `common.google_auth` drops it otherwise, so an unverified address
+            # can never be stamped on a booking as the customer's own.
+            token_email = claims.get("email")
             if token_email:
                 extra["email"] = token_email
-            # Make sure whoever just booked is visible under Users even if
-            # `sync_clerk_users` has not run since they signed up. Only the
-            # claims already verified above are used, and an existing row is
-            # left alone — the sync command owns the full detail.
+            # Make sure whoever just booked is visible under Users. Only the
+            # claims already verified above are used.
             _ensure_account_visible(claims)
         appointment = serializer.save(**extra)
         # Queued, not sent: it goes out on a background thread once this
@@ -500,22 +535,22 @@ class ContactMessageCreateView(CreateAPIView):
     throttle_scope = "submissions"
 
     def perform_create(self, serializer):
-        """Stamp the enquiry with the *verified* Clerk user, if there is one.
+        """Stamp the enquiry with the *verified* Google user, if there is one.
 
         The claims come from the signed session token, not the request body, so
         a caller cannot post somebody else's id and attribute a message to them.
-        `clerk_user_id` is not a serializer field, which is what makes that
+        `google_user_id` is not a serializer field, which is what makes that
         true rather than merely intended.
 
         A request with no valid token still succeeds, anonymously. The website
         only shows the form to a signed-in visitor, but gating it there is a
-        product decision; refusing here as well would mean a Clerk outage
+        product decision; refusing here as well would mean a sign-in outage
         silently loses a customer's enquiry.
         """
         claims = user_from_request(self.request) or {}
         extra = {}
         if claims.get("sub"):
-            extra["clerk_user_id"] = claims["sub"]
+            extra["google_user_id"] = claims["sub"]
             _ensure_account_visible(claims)
         message = serializer.save(**extra)
         notify_new_contact_message(message)

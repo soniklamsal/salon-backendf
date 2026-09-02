@@ -10,7 +10,7 @@ from bookings.models import (
     Appointment,
     Barber,
     BookingSection,
-    ClerkProfile,
+    GoogleProfile,
     ContactMessage,
     Service,
     TimeSlot,
@@ -360,7 +360,7 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         "created_at",
         "updated_at",
         "payment_preview",
-        "clerk_user_id",
+        "google_user_id",
         "reference",
         "order_id",
         "selected_time_display",
@@ -371,7 +371,7 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         (
             "Who",
             {
-                "fields": ("name", "email", "phone", "address", "clerk_user_id"),
+                "fields": ("name", "email", "phone", "address", "google_user_id"),
                 "description": (
                     "The account id is taken from the signed-in session and "
                     "verified server-side, so it cannot be faked by the form. "
@@ -648,24 +648,25 @@ class ContactMessageAdmin(AdminAjaxMixin, admin.ModelAdmin):
     def sent_by(self, obj):
         """Which account sent this, as a person would ask it.
 
-        The raw Clerk id means nothing to staff, so it is resolved through the
-        mirrored profile to the email they signed up with. An enquiry with no
-        account behind it says so plainly rather than showing an empty field --
-        that state is real (the form is offered to signed-in visitors, but the
-        endpoint still accepts a message without a token) and staff should be
-        able to tell the two apart.
+        The raw Google id means nothing to staff, so it is resolved through
+        the mirrored profile to the email they signed up with. An enquiry with
+        no account behind it says so plainly rather than showing an empty field
+        -- that state is real (the form is offered to signed-in visitors, but
+        the endpoint still accepts a message without a token) and staff should
+        be able to tell the two apart.
         """
-        if not obj.clerk_user_id:
+        if not obj.google_user_id:
             return "Not signed in"
 
         profile = (
-            ClerkProfile.objects.filter(clerk_user_id=obj.clerk_user_id)
+            GoogleProfile.objects.filter(google_user_id=obj.google_user_id)
             .select_related("user")
             .first()
         )
         if profile is None:
-            # Signed in, but `sync_clerk_users` has not mirrored them yet.
-            return f"Account {obj.clerk_user_id[-8:]}"
+            # Signed in on a token whose account was never mirrored — only
+            # possible if the mirror lost a race and both branches failed.
+            return f"Account {obj.google_user_id[-8:]}"
         return profile.user.email or profile.user.username
 
 
@@ -687,38 +688,34 @@ class ServiceProxyAdmin(_SectionsServiceAdmin):
 # --- Signed-up accounts, under Authentication and Authorization -------------
 
 
-class ClerkProfileInline(admin.StackedInline):
-    """Everything Clerk knows, shown on the user it belongs to.
+class GoogleProfileInline(admin.StackedInline):
+    """What Google told us about this customer, shown on the user it belongs to.
 
-    Read-only throughout: Clerk owns these records, and a value edited here
-    would be silently overwritten by the next `sync_clerk_users` run. Editing
-    belongs in the Clerk dashboard.
+    Read-only throughout: Google owns these records, and a value edited here
+    would be overwritten the next time that customer signs in and books.
+
+    Thinner than the Clerk inline it replaces, and necessarily so. Clerk had a
+    back-end API this project could call to list every account with its
+    provider, phone and ban state; Google has no equivalent. Everything here
+    comes from the claims in a session token, so what is not in a token is not
+    a column.
     """
 
-    model = ClerkProfile
+    model = GoogleProfile
     can_delete = False
     extra = 0
-    verbose_name_plural = "Clerk account"
+    verbose_name_plural = "Google account"
     readonly_fields = (
-        "clerk_user_id",
-        "provider_labels",
+        "google_user_id",
         "avatar",
-        "phone",
         "email_verified",
-        "banned",
-        "clerk_created_at",
-        "last_sign_in_at",
-        "last_synced_at",
+        "last_seen_at",
         "image_url",
     )
     fields = readonly_fields
 
     def has_add_permission(self, request, obj=None):
         return False
-
-    @admin.display(description="Signed in with")
-    def provider_labels(self, obj):
-        return obj.provider_labels or "—"
 
     @admin.display(description="Avatar")
     def avatar(self, obj):
@@ -730,10 +727,10 @@ class ClerkProfileInline(admin.StackedInline):
         )
 
 
-class ClerkUserAdmin(BaseUserAdmin):
-    """Django's user admin, plus who signed up through Clerk and how."""
+class GoogleUserAdmin(BaseUserAdmin):
+    """Django's user admin, plus who signed in with Google."""
 
-    inlines = [*BaseUserAdmin.inlines, ClerkProfileInline]
+    inlines = [*BaseUserAdmin.inlines, GoogleProfileInline]
     list_display = (
         "username",
         "email",
@@ -743,17 +740,19 @@ class ClerkUserAdmin(BaseUserAdmin):
         "last_seen",
         "is_staff",
     )
-    list_filter = (*BaseUserAdmin.list_filter, "clerk_profile__providers")
+    # Filtering on the presence of a profile is the useful cut now that there
+    # is only ever one provider: it separates customers from staff accounts.
+    list_filter = (*BaseUserAdmin.list_filter, "google_profile__email_verified")
     search_fields = (
         "username",
         "email",
         "first_name",
         "last_name",
-        "clerk_profile__clerk_user_id",
+        "google_profile__google_user_id",
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("clerk_profile")
+        return super().get_queryset(request).select_related("google_profile")
 
     @admin.display(description="Name", ordering="first_name")
     def full_name(self, obj):
@@ -761,26 +760,24 @@ class ClerkUserAdmin(BaseUserAdmin):
 
     @admin.display(description="Signed in with")
     def signed_in_with(self, obj):
-        profile = getattr(obj, "clerk_profile", None)
+        profile = getattr(obj, "google_profile", None)
         if profile is None:
-            # Staff accounts created with createsuperuser have no Clerk record.
+            # Staff accounts made with createsuperuser have no Google record.
             return format_html('<span style="color:#888">Django login</span>')
-        label = profile.provider_labels or "—"
-        colour = "#2e7d32" if profile.signed_in_with_google else "#555"
-        return format_html('<b style="color:{}">{}</b>', colour, label)
+        return format_html('<b style="color:#2e7d32">Google</b>')
 
-    @admin.display(description="Signed up", ordering="clerk_profile__clerk_created_at")
+    @admin.display(description="Signed up", ordering="google_profile__created_at")
     def signed_up(self, obj):
-        profile = getattr(obj, "clerk_profile", None)
-        return profile.clerk_created_at if profile else None
+        profile = getattr(obj, "google_profile", None)
+        return profile.created_at if profile else None
 
-    @admin.display(description="Last sign-in", ordering="clerk_profile__last_sign_in_at")
+    @admin.display(description="Last seen", ordering="google_profile__last_seen_at")
     def last_seen(self, obj):
-        profile = getattr(obj, "clerk_profile", None)
-        return profile.last_sign_in_at if profile else None
+        profile = getattr(obj, "google_profile", None)
+        return profile.last_seen_at if profile else None
 
 
 # Replace Django's registration so Users keeps its place in the sidebar under
 # Authentication and Authorization, rather than adding a second list elsewhere.
 admin.site.unregister(User)
-admin.site.register(User, ClerkUserAdmin)
+admin.site.register(User, GoogleUserAdmin)

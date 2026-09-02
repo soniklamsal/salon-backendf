@@ -43,25 +43,31 @@ def dashboard_stats():
     Appointment, ContactMessage = _models()
     status = Appointment.Status
 
+    today = timezone.localdate()
+
+    # When a booking happens is `time_slot.date`: the customer picks the slot
+    # in the booking form and `approve()` no longer copies anything onto
+    # `scheduled_*`. Those two columns are only still consulted for rows made
+    # before slots existed, which is why both halves are needed here -- counting
+    # `scheduled_date` alone reported 0 visits on a day fully booked, and
+    # flagged every approved booking as having no time.
+    booked_for_today = Q(time_slot__date=today) | Q(
+        time_slot__isnull=True, scheduled_date=today
+    )
+    has_no_time = Q(
+        time_slot__isnull=True, scheduled_date__isnull=True, scheduled_time__isnull=True
+    )
+
     counts = Appointment.objects.aggregate(
         pending=Count("pk", filter=Q(status=status.PENDING)),
         today=Count(
             "pk",
-            filter=Q(
-                scheduled_date=timezone.localdate(),
-                status__in=[status.APPROVED, status.COMPLETED],
-            ),
+            filter=booked_for_today
+            & Q(status__in=[status.APPROVED, status.COMPLETED]),
         ),
         # Approved but with no time set -- the customer has been told yes and
         # has not been told when. Invisible on every other screen.
-        timeless=Count(
-            "pk",
-            filter=Q(
-                status=status.APPROVED,
-                scheduled_date__isnull=True,
-                scheduled_time__isnull=True,
-            ),
-        ),
+        timeless=Count("pk", filter=Q(status=status.APPROVED) & has_no_time),
     )
     counts["unhandled"] = ContactMessage.objects.filter(is_handled=False).count()
     return counts

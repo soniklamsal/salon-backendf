@@ -316,8 +316,8 @@ class Appointment(TimeStampedModel):
     # Kept on the model because the older "Book Now" enquiry collected them and
     # existing rows still carry them.
     email = models.EmailField(blank=True)
-    # Validated only here, not on ClerkProfile: that one is mirrored from
-    # Clerk, which owns it, and rejecting a value they already accepted would
+    # Validated only here, not on GoogleProfile: that one is copied from
+    # Google, which owns it, and rejecting a value they already accepted would
     # break the sync rather than protect anything.
     phone = models.CharField(max_length=40, blank=True, validators=[validate_phone])
     address = models.CharField(max_length=255, blank=True)
@@ -397,17 +397,17 @@ class Appointment(TimeStampedModel):
         validators=[validate_upload],
     )
 
-    # Who booked, taken from a verified Clerk session — never from the form.
+    # Who booked, taken from a verified Google session — never from the form.
     # Empty means the booking was made before sign-in was switched on, or by
     # someone whose token failed verification.
-    clerk_user_id = models.CharField(
+    google_user_id = models.CharField(
         max_length=64,
         blank=True,
-        # No db_index: `appt_clerk_created_idx` below leads with this column, so
-        # a standalone index on it duplicates work the composite already does.
-        # Bookings are the only frequent write on this site, which makes this
-        # the table where a spare index actually costs something.
-        help_text="Clerk account id. Set automatically; not editable by the customer.",
+        # No db_index: `appt_google_created_idx` below leads with this column,
+        # so a standalone index on it duplicates work the composite already
+        # does. Bookings are the only frequent write on this site, which makes
+        # this the table where a spare index actually costs something.
+        help_text="Google account id. Set automatically; not editable by the customer.",
     )
 
     status = models.CharField(
@@ -445,9 +445,9 @@ class Appointment(TimeStampedModel):
             models.Index(fields=["status", "-created_at"], name="appt_status_created_idx"),
             # "Who is in on Tuesday" — the one date question staff actually ask.
             models.Index(fields=["preferred_date"], name="appt_preferred_date_idx"),
-            # my-bookings, which filters on the verified Clerk id then orders.
+            # my-bookings, which filters on the verified Google id then orders.
             models.Index(
-                fields=["clerk_user_id", "-created_at"], name="appt_clerk_created_idx"
+                fields=["google_user_id", "-created_at"], name="appt_google_created_idx"
             ),
         ]
 
@@ -539,16 +539,16 @@ class ContactMessage(TimeStampedModel):
     message = models.TextField()
     is_handled = models.BooleanField(default=False)
 
-    # Who sent it, taken from a verified Clerk session -- never from the form.
+    # Who sent it, taken from a verified Google session -- never from the form.
     # The website only offers the message form to a signed-in visitor, so this
     # is normally set; it stays blank-able because the endpoint still accepts an
-    # enquiry without a token. Refusing one because Clerk blinked, or because a
-    # tab sat open until the session expired, would lose a real customer -- the
-    # same trade `Appointment.clerk_user_id` makes.
-    clerk_user_id = models.CharField(
+    # enquiry without a token. Refusing one because sign-in blinked, or because
+    # a tab sat open until the session expired, would lose a real customer --
+    # the same trade `Appointment.google_user_id` makes.
+    google_user_id = models.CharField(
         max_length=64,
         blank=True,
-        help_text="Clerk account id. Set automatically; not editable by the sender.",
+        help_text="Google account id. Set automatically; not editable by the sender.",
     )
 
     class Meta:
@@ -579,72 +579,48 @@ class Service(SectionsService):
         verbose_name_plural = "Services"
 
 
-class ClerkProfile(TimeStampedModel):
-    """Everything Clerk knows about a signed-up customer, mirrored locally.
+class GoogleProfile(TimeStampedModel):
+    """A customer who has signed in with Google, mirrored into Django's Users.
 
-    Clerk is the source of truth — accounts are created there, and this table
-    is a read-only copy so the admin can answer "who has signed up, and how did
-    they sign in" without leaving Django. It is attached to a `auth.User` row
-    so the accounts appear under Authentication and Authorization -> Users,
-    which is where someone would look for them.
+    Google is the source of truth — accounts are created there, and this table
+    exists so the admin can answer "who has signed up" without leaving Django.
+    It is attached to an `auth.User` row so the accounts appear under
+    Authentication and Authorization -> Users, which is where someone would
+    look for them.
 
     Those mirrored users have an unusable password set: they authenticate
-    through Clerk, never through Django's login form, and a real password on
+    through Google, never through Django's login form, and a real password on
     them would be a second way in that nobody is watching.
 
-    Refreshed by `manage.py sync_clerk_users`, and topped up whenever a
-    verified booking arrives from an account not seen before.
+    Written from the claims of a verified session token whenever a booking or
+    an enquiry arrives — there is nothing to poll. This is the difference from
+    the Clerk arrangement it replaces: Clerk had a back-end API that could list
+    every account, so a `sync_clerk_users` command kept a fuller copy in step.
+    Google has no equivalent "list my users" call, so the fields here are
+    exactly what a sign-in tells us and no more. Rather than keep columns that
+    could only ever be null, they are gone.
     """
 
     user = models.OneToOneField(
         "auth.User",
         on_delete=models.CASCADE,
-        related_name="clerk_profile",
+        related_name="google_profile",
     )
     # `unique=True` carries the index; MySQL collapsed the pair but
     # PostgreSQL would have built both.
-    clerk_user_id = models.CharField(max_length=64, unique=True)
-
-    # How they signed in. "oauth_google" is Google; "email_password" is the
-    # form. Several can apply if the account was linked more than one way.
-    providers = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Comma separated, as reported by Clerk.",
-    )
+    google_user_id = models.CharField(max_length=64, unique=True)
 
     image_url = models.URLField(max_length=500, blank=True)
-    phone = models.CharField(max_length=40, blank=True)
     email_verified = models.BooleanField(default=False)
-    banned = models.BooleanField(default=False)
 
-    clerk_created_at = models.DateTimeField(null=True, blank=True)
-    last_sign_in_at = models.DateTimeField(null=True, blank=True)
-    last_synced_at = models.DateTimeField(null=True, blank=True)
+    # Touched each time a verified request arrives, so the admin can sort by
+    # who is actually still using the site.
+    last_seen_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ["-last_sign_in_at", "-clerk_created_at"]
-        verbose_name = "Clerk account"
-        verbose_name_plural = "Clerk accounts"
+        ordering = ["-last_seen_at", "-created_at"]
+        verbose_name = "Google account"
+        verbose_name_plural = "Google accounts"
 
     def __str__(self):
-        return self.user.email or self.user.username or self.clerk_user_id
-
-    @property
-    def signed_in_with_google(self) -> bool:
-        return "google" in (self.providers or "").lower()
-
-    @property
-    def provider_labels(self) -> str:
-        """"Google, Email" rather than "oauth_google,email_password"."""
-        pretty = {
-            "oauth_google": "Google",
-            "oauth_facebook": "Facebook",
-            "oauth_github": "GitHub",
-            "email_password": "Email",
-            "email_link": "Email link",
-            "email_code": "Email code",
-            "phone_code": "Phone",
-        }
-        parts = [p.strip() for p in (self.providers or "").split(",") if p.strip()]
-        return ", ".join(pretty.get(p, p.replace("oauth_", "").title()) for p in parts)
+        return self.user.email or self.user.username or self.google_user_id

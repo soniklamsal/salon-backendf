@@ -1,10 +1,24 @@
-Django>=5.0,<5.1  # Downgraded for MariaDB 10.4 compatibility
-djangorestframework>=3.16,<3.17  # Pinned to the tested 3.16.x. Unbounded, pip backtracks to 3.17.x (3.18 needs Django 5.2), so prod would not match dev.
+# 5.2 LTS, supported until April 2028. Was pinned <5.1 for MariaDB 10.4, which
+# went end-of-life in June 2024 and which nothing here actually runs on: the
+# only configured deployment is render.yaml, and that provisions PostgreSQL.
+# Django 5.0 is itself end-of-life and carried 11 known CVEs at that pin.
+# If this ever moves to MySQL/MariaDB, the floor is MariaDB 10.5.
+Django>=5.2.17,<6.0
+# 3.17.2 is the first release without CVE-2026-73228 / CVE-2026-73229. Still
+# upper-bounded so pip cannot silently move to a major it has not been tested on.
+djangorestframework>=3.17.2,<3.18
 django-jazzmin>=3.0.1
 django-cors-headers>=4.7
 Pillow>=11.0
+# 0.6.0 fixes five parser CVEs. Django depends on it, so an old one is pulled
+# in transitively unless it is named here.
+sqlparse>=0.6.0
 python-dotenv>=1.0
 whitenoise>=6.8
+# Verifies the session tokens the frontend mints. The [crypto] extra is no
+# longer strictly required -- tokens are HS256 now, not the RS256/JWKS Clerk
+# used -- but it is kept because cryptography is a dependency of other pinned
+# packages anyway and dropping it saves nothing.
 PyJWT[crypto]>=2.9
 cloudinary>=1.44
 django-cloudinary-storage>=0.3
@@ -13,7 +27,8 @@ django-cloudinary-storage>=0.3
 psycopg[binary]>=3.2
 # MySQL (for cPanel deployments)
 mysqlclient>=2.2.0
-# Requests for Clerk API calls
-requests>=2.32
+# NOTE: `requests` was here only for Clerk's back-end API, which is gone.
+# Nothing in this project imports it any more. Left out deliberately -- if a
+# transitive dependency needs it, pip installs it as that package's own.
 # WSGI HTTP Server for production
 gunicorn>=21.2

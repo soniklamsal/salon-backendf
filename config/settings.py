@@ -308,21 +308,26 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "common.exceptions.exception_handler",
 }
 
-# --- Clerk (optional) ------------------------------------------------------
-# Set CLERK_ISSUER (e.g. https://your-app.clerk.accounts.dev) once the Clerk
-# app exists. Until then verification is off and bookings are recorded without
-# an account, which is what keeps the site working before the keys are added.
-CLERK_ISSUER = os.environ.get("CLERK_ISSUER", "")
-CLERK_JWKS_URL = os.environ.get("CLERK_JWKS_URL", "")
-# Backend API key. Only used to LIST accounts for the admin; never sent to
-# the browser and never logged.
-CLERK_SECRET_KEY = os.environ.get("CLERK_SECRET_KEY", "")
-# Origins allowed to have minted a session token this API will accept, checked
-# against the token's `azp` claim. Comma-separated; empty switches the check
-# off, which is the pre-existing behaviour and what keeps an unconfigured
-# deployment working. Set it to the frontend origin in production -- it is what
-# stops a Clerk token issued for a different site being replayed here.
-CLERK_AUTHORIZED_PARTIES = env("CLERK_AUTHORIZED_PARTIES", "")
+# --- Accounts (Google sign-in, optional) -----------------------------------
+# Customers sign in with Google on the frontend, which then mints a short-lived
+# token per API call and sends it as `Authorization: Bearer ...`. This is the
+# secret both sides sign and verify it with, so it must match
+# `SALON_AUTH_SECRET` in the frontend's environment exactly.
+#
+# Unset means verification is off: bookings are recorded without an account,
+# which is what keeps the site working before the secret is added. See
+# common/google_auth.py.
+SALON_AUTH_SECRET = os.environ.get("SALON_AUTH_SECRET", "")
+# Who may mint tokens, and who they are for. Checked as the `iss` and `aud`
+# claims. Defaults match what the frontend sends; changing either means
+# changing both sides.
+SALON_AUTH_ISSUER = env("SALON_AUTH_ISSUER", "salon-frontend")
+SALON_AUTH_AUDIENCE = env("SALON_AUTH_AUDIENCE", "salon-api")
+# The Google OAuth client the frontend signs in against. Not used to verify
+# anything here -- Google is verified on the frontend at sign-in -- it is
+# recorded so the admin can tell which project the accounts belong to.
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
 
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
@@ -499,7 +504,7 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
-        # Ours: the API error handler, booking failures, Clerk verification.
+        # Ours: the API error handler, booking failures, token verification.
         "api": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "bookings": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "common": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},

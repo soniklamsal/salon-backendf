@@ -91,10 +91,10 @@ class BookingEndpointTests(TestCase):
         self.client.post(self.url, self.payload(order_id="ORD-2026-0001"))
         self.assertEqual(Appointment.objects.get().order_id, None)
 
-    def test_clerk_user_id_cannot_be_forged_through_the_body(self):
+    def test_google_user_id_cannot_be_forged_through_the_body(self):
         """It comes from the verified token or nowhere."""
-        self.client.post(self.url, self.payload(clerk_user_id="user_victim"))
-        self.assertEqual(Appointment.objects.get().clerk_user_id, "")
+        self.client.post(self.url, self.payload(google_user_id="user_victim"))
+        self.assertEqual(Appointment.objects.get().google_user_id, "")
 
     def test_verified_token_stamps_the_booking(self):
         with patch(
@@ -103,7 +103,7 @@ class BookingEndpointTests(TestCase):
         ):
             self.client.post(self.url, self.payload(), HTTP_AUTHORIZATION="Bearer x")
         booking = Appointment.objects.get()
-        self.assertEqual(booking.clerk_user_id, "user_abc")
+        self.assertEqual(booking.google_user_id, "user_abc")
         self.assertEqual(booking.email, "a@b.com")
 
     def test_screenshot_is_required(self):
@@ -230,20 +230,20 @@ class BookingEndpointTests(TestCase):
         """The form shows it read-only; the token is the only source."""
         with patch(
             "api.views.user_from_request",
-            return_value={"sub": "user_abc", "email": "signup@clerk.test"},
+            return_value={"sub": "user_abc", "email": "signup@example.test"},
         ):
             response = self.client.post(
                 self.url, self.payload(), HTTP_AUTHORIZATION="Bearer x"
             )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Appointment.objects.get().email, "signup@clerk.test")
+        self.assertEqual(Appointment.objects.get().email, "signup@example.test")
 
     def test_a_posted_email_is_ignored(self):
         """The field is read-only, so a caller editing the request gets nowhere."""
         with patch(
             "api.views.user_from_request",
-            return_value={"sub": "user_abc", "email": "signup@clerk.test"},
+            return_value={"sub": "user_abc", "email": "signup@example.test"},
         ):
             self.client.post(
                 self.url,
@@ -251,7 +251,7 @@ class BookingEndpointTests(TestCase):
                 HTTP_AUTHORIZATION="Bearer x",
             )
 
-        self.assertEqual(Appointment.objects.get().email, "signup@clerk.test")
+        self.assertEqual(Appointment.objects.get().email, "signup@example.test")
 
     def test_a_posted_email_cannot_fill_the_gap_for_an_anonymous_booking(self):
         """No token means no email, whatever the body says."""
@@ -352,7 +352,7 @@ class BookingEndpointTests(TestCase):
     def test_account_mirroring_failure_does_not_lose_the_booking(self):
         """A paid customer must not be rejected because a sidebar row failed.
 
-        Mirroring the Clerk account into Django's Users list is a convenience
+        Mirroring the Google account into Django's Users list is a convenience
         for the admin. When it fails the booking must still be recorded — the
         customer has already paid.
         """
@@ -360,7 +360,7 @@ class BookingEndpointTests(TestCase):
 
         with patch("api.views.user_from_request", return_value={"sub": "user_x"}):
             with patch(
-                "bookings.models.ClerkProfile.objects.get_or_create",
+                "bookings.models.GoogleProfile.objects.get_or_create",
                 side_effect=IntegrityError("lost the race"),
             ):
                 response = self.client.post(
@@ -368,7 +368,7 @@ class BookingEndpointTests(TestCase):
                 )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Appointment.objects.get().clerk_user_id, "user_x")
+        self.assertEqual(Appointment.objects.get().google_user_id, "user_x")
 
     def test_throttle_limits_repeated_submissions(self):
         """The endpoint is anonymous and takes a file, so it has to have a cap."""
@@ -380,8 +380,8 @@ class BookingEndpointTests(TestCase):
 class MyBookingsTests(TestCase):
     def setUp(self):
         self.url = reverse("my-bookings")
-        self.mine = Appointment.objects.create(name="Mine", clerk_user_id="user_me")
-        self.theirs = Appointment.objects.create(name="Theirs", clerk_user_id="user_them")
+        self.mine = Appointment.objects.create(name="Mine", google_user_id="user_me")
+        self.theirs = Appointment.objects.create(name="Theirs", google_user_id="user_them")
 
     def test_anonymous_gets_an_empty_list_not_an_error(self):
         response = self.client.get(self.url)
@@ -459,7 +459,7 @@ class MyBookingsTests(TestCase):
         """There is no caller-supplied id to tamper with, and adding one fails."""
         with patch("api.views.user_from_request", return_value={"sub": "user_me"}):
             response = self.client.get(
-                self.url + "?clerk_user_id=user_them", HTTP_AUTHORIZATION="Bearer x"
+                self.url + "?google_user_id=user_them", HTTP_AUTHORIZATION="Bearer x"
             )
         names = [b["name"] for b in response.json()["bookings"]]
         self.assertEqual(names, ["Mine"])

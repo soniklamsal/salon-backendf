@@ -8,7 +8,7 @@ services:
     startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.12.7
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
@@ -23,15 +23,26 @@ services:
         fromDatabase:
           name: salon-db
           property: connectionString
-      - key: CLERK_ISSUER
-        sync: false  # Set manually in Render dashboard
-      - key: CLERK_SECRET_KEY
-        sync: false  # Set manually in Render dashboard
+      # Shared with the frontend, which signs the session tokens this API
+      # verifies. It must be byte-for-byte the same value as SALON_AUTH_SECRET
+      # in Vercel: if the two differ, sign-in still appears to work and every
+      # booking is recorded anonymously, with nothing in the browser to say so.
+      # `sync: false` rather than `generateValue: true` for exactly that reason
+      # — a generated value could never match the frontend's.
+      - key: SALON_AUTH_SECRET
+        sync: false
+      # Recorded so the admin can tell which Google project the accounts belong
+      # to. Not used to verify anything here; Google is verified on the frontend.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      # Signs the time-limited URLs for private payment screenshots.
+      - key: CLOUDINARY_AUTH_TOKEN_KEY
         sync: false
       - key: EMAIL_HOST_USER
         sync: false

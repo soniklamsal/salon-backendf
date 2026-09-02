@@ -147,7 +147,7 @@ def screenshot_token(reference: str) -> str:
     """A short-lived capability token for one booking's screenshot.
 
     Needed because a browser will not attach an `Authorization` header to an
-    `<img src>`. The customer's Clerk token proves who they are when the
+    `<img src>`. The customer's session token proves who they are when the
     booking list is fetched; this carries that decision into the image request
     that follows, without putting the session token in a URL.
 

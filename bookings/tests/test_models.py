@@ -143,15 +143,27 @@ class SchedulingTests(TestCase):
 
     def test_an_old_booking_keeps_the_time_it_was_made_with(self):
         """`preferred_*` is retired but older rows still carry one, and losing
-        it on approval would strand a real customer with no time at all."""
+        it on approval would strand a real customer with no time at all.
+
+        `approve()` no longer copies it onto `scheduled_*`: the customer picks
+        a `time_slot` now, and copying would invent a second answer for rows
+        that have one. The legacy value has to survive approval where it is,
+        because the admin's Visit column falls back to reading it there.
+        """
         booking = Appointment.objects.create(
             name="Legacy", preferred_date=self.day, preferred_time=time(14, 30)
         )
         booking.approve()
         booking.refresh_from_db()
 
-        self.assertEqual(booking.scheduled_date, self.day)
-        self.assertEqual(booking.scheduled_time, time(14, 30))
+        self.assertEqual(booking.preferred_date, self.day)
+        self.assertEqual(booking.preferred_time, time(14, 30))
+
+        from bookings.admin import AppointmentAdmin
+        from django.contrib import admin as django_admin
+
+        shown = django_admin.site._registry[Appointment].visit(booking)
+        self.assertIn("14:30", shown.replace("2:30 pm", "14:30"))
 
 
 class TimeSlotTests(TestCase):

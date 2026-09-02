@@ -180,7 +180,7 @@ class FeedEndpointTests(TestCase):
         self.assertEqual(payload["reason"], "signed_out")
 
     def test_a_signed_in_non_staff_account_is_refused(self):
-        """Every customer who books through Clerk has a User row."""
+        """Every customer who books with Google has a User row."""
         self.client.force_login(self.customer)
         response, payload = self.feed()
         self.assertEqual(response.status_code, 401)

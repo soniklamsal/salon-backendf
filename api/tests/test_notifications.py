@@ -245,7 +245,7 @@ class BookingNotificationTests(HtmlPartMixin, TestCase):
         self.assertNotIn("/admin/", html)
 
     def test_an_anonymous_booking_has_no_reply_to_rather_than_a_blank_one(self):
-        """The form does not ask for an email; it comes from the Clerk token."""
+        """The form does not ask for an email; it comes from the session token."""
         self.post()
         self.assertEqual(Appointment.objects.get().email, "")
         self.assertFalse(mail.outbox[0].reply_to)

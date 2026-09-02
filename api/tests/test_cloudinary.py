@@ -105,7 +105,7 @@ class ScreenshotViewOnCloudinaryTests(TestCase):
         with override_settings(PRIVATE_MEDIA_ROOT=self.tmp):
             self.booking = Appointment.objects.create(
                 name="Asha",
-                clerk_user_id="user_owner",
+                google_user_id="user_owner",
                 payment_screenshot=SimpleUploadedFile(
                     "proof.png", png().read(), content_type="image/png"
                 ),
@@ -131,7 +131,7 @@ class ScreenshotViewOnCloudinaryTests(TestCase):
 
     @CLOUDINARY_ON
     def test_a_token_for_another_booking_gets_no_redirect(self):
-        other = Appointment.objects.create(name="Bim", clerk_user_id="user_other")
+        other = Appointment.objects.create(name="Bim", google_user_id="user_other")
         response = self.client.get(f"{self.url}?token={screenshot_token(other.reference)}")
         self.assertEqual(response.status_code, 404)
 

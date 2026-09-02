@@ -11,6 +11,10 @@ __pycache__/
 
 # Database
 *.sqlite3
+# Timestamped backups taken before a risky migration. `*.sqlite3` above does
+# not match these -- the suffix comes after the extension -- and a database
+# full of real customer bookings must never be committed by accident.
+*.sqlite3.bak*
 *.db
 
 # Media and uploads

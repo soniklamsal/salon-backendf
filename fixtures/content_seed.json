@@ -1,0 +1,3088 @@
+[
+{
+  "model": "core.sitesettings",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.807Z",
+    "updated_at": "2026-09-02T12:15:39.619Z",
+    "logo": "media/brand/logo_ogglgg",
+    "logo_url": "",
+    "brand_name": "AJ Salon",
+    "badge_caption": "We Don't Keep Our Beauty Secrets",
+    "meta_title": "AJ Salon — Always Make Room for a Little Beauty in Your Life",
+    "meta_description": "Premium hair, beauty and spa treatments in Kathmandu, Nepal. Book an appointment or browse the service menu.",
+    "nav_cta_label": "Book Now",
+    "nav_cta_href": "/services",
+    "copyright_text": "© 2026 AJ Salon. All rights reserved."
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "label": "Home",
+    "href": "/",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "label": "About Us",
+    "href": "/about-us",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "label": "Service Menu",
+    "href": "/services",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.navlink",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "label": "Contact Us",
+    "href": "/contact",
+    "show_in_header": true,
+    "show_in_footer": true
+  }
+},
+{
+  "model": "core.sociallink",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "platform": "facebook",
+    "url": "https://facebook.com",
+    "label": ""
+  }
+},
+{
+  "model": "core.sociallink",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "platform": "instagram",
+    "url": "https://instagram.com",
+    "label": ""
+  }
+},
+{
+  "model": "sections.herosection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.815Z",
+    "updated_at": "2026-09-02T12:19:33.668Z",
+    "eyebrow": "Welcome To Choppers",
+    "headline_line_1": "Best Hair Salon For A",
+    "headline_line_2": "Professional Look",
+    "body": "Choppers offers high performance customized facials to provide you with visible results.",
+    "primary_cta_label": "Book Now",
+    "primary_cta_href": "/services",
+    "secondary_cta_label": "All Services",
+    "secondary_cta_href": "/services",
+    "background_image": "",
+    "background_image_url": "",
+    "stylist_image": "",
+    "stylist_image_url": "/images/hero-stylist.png",
+    "stylist_image_alt": "A barber trimming the hair of a smiling client in a black cape",
+    "watermark_image": "",
+    "watermark_image_url": "",
+    "background_color": "#0a0a0a",
+    "heading_color": "#ffffff",
+    "body_color": "#9a9a9a",
+    "eyebrow_color": "#fbb034",
+    "primary_button_bg": "#c7ff3d",
+    "primary_button_text": "#000000",
+    "secondary_button_color": "#c7ff3d"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "label": "Fresh Cut",
+    "icon": "hair",
+    "icon_image": "media/services/sharpfade_tcrqvd",
+    "image": "media/services/sharpfade_awiudq",
+    "image_url": "",
+    "href": "",
+    "description": "A full cut and finish, shaped to how you actually wear it.",
+    "price_from": "800.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "label": "Sharp Fade",
+    "icon": "hair",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269452/devis-gym/people/DSC07615-4.JPG.webp",
+    "href": "",
+    "description": "Skin, low or high — blended clean through the sides and back.",
+    "price_from": "900.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "label": "Beard Work",
+    "icon": "facial",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269591/devis-gym/people/DSC07629-3.JPG.webp",
+    "href": "",
+    "description": "Line-up, trim and hot-towel finish.",
+    "price_from": "500.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "label": "Wash & Style",
+    "icon": "skincare",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269637/devis-gym/people/DSC07636-3.JPG.webp",
+    "href": "",
+    "description": "Wash, condition and a blow-dry set for the day.",
+    "price_from": "600.00"
+  }
+},
+{
+  "model": "sections.service",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "label": "Colour Day",
+    "icon": "makeup",
+    "icon_image": "",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786268875/devis-gym/people/DSC07385.JPG.webp",
+    "href": "",
+    "description": "Full colour or highlights, booked with time to do it properly.",
+    "price_from": "2500.00"
+  }
+},
+{
+  "model": "sections.whowearesection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.818Z",
+    "updated_at": "2026-09-01T11:29:54.818Z",
+    "heading_line_1": "WHO",
+    "heading_line_2": "WE ARE",
+    "lead": "A Kathmandu salon built on craft — every cut shaped to the person in the chair, not to a catalogue.",
+    "body": "Our stylists train year-round on cuts, colour and care, so the chair you sit in is the same standard every visit.",
+    "cta_label": "About us",
+    "cta_href": "/about-us",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.motivationsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.821Z",
+    "updated_at": "2026-09-01T11:29:54.821Z",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "text": "BEAUTY IS POWER"
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "text": "CONFIDENCE IS YOUR"
+  }
+},
+{
+  "model": "sections.motivationline",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "text": "BEST ACCESSORY"
+  }
+},
+{
+  "model": "sections.gallerysection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.822Z",
+    "updated_at": "2026-09-01T11:29:54.822Z",
+    "heading": "Our Speciality",
+    "body": "Capturing elegance and artistry,\nwitness the transformations that\ndefine our craft.",
+    "cta_label": "View Services",
+    "cta_href": "/services",
+    "is_published": true
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/first.jpeg",
+    "alt": "Editorial fashion landing page"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/second.jpeg",
+    "alt": "Studio portfolio layout"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/third.jpeg",
+    "alt": "Brand identity showcase"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/fourth.jpeg",
+    "alt": "Product page concept"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/fifth.jpeg",
+    "alt": "Interface design study"
+  }
+},
+{
+  "model": "sections.galleryimage",
+  "pk": 6,
+  "fields": {
+    "order": 5,
+    "is_published": true,
+    "section": 1,
+    "image": "",
+    "image_url": "/images/dribbble/sixth.jpeg",
+    "alt": "Marketing site exploration"
+  }
+},
+{
+  "model": "sections.classessection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.824Z",
+    "updated_at": "2026-09-01T11:29:54.824Z",
+    "heading_top": "Moments Captured",
+    "heading_bottom": "In The Chair",
+    "marquee_phrase": "FRESH CUTS • SHARP FADES • CLEAN LINES • EVERY CHAIR • EVERY DAY • REAL MOMENTS"
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "slug": "fresh-cut",
+    "name": "Fresh\nCut",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/first.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "slug": "sharp-fade",
+    "name": "Sharp\nFade",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/second.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "slug": "beard-work",
+    "name": "Beard\nWork",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/third.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "slug": "wash-style",
+    "name": "Wash &\nStyle",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/fourth.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "section": 1,
+    "slug": "colour-day",
+    "name": "Colour\nDay",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/fifth.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 6,
+  "fields": {
+    "order": 5,
+    "is_published": true,
+    "section": 1,
+    "slug": "clean-lines",
+    "name": "Clean\nLines",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/sixth.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 7,
+  "fields": {
+    "order": 6,
+    "is_published": true,
+    "section": 1,
+    "slug": "finishing-touch",
+    "name": "Finishing\nTouch",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/first.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.classcard",
+  "pk": 8,
+  "fields": {
+    "order": 7,
+    "is_published": true,
+    "section": 1,
+    "slug": "book-your-seat",
+    "name": "Book\nYour Seat",
+    "href": "/services",
+    "image": "",
+    "image_url": "/images/dribbble/second.jpeg",
+    "video_url": ""
+  }
+},
+{
+  "model": "sections.ourstorysection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.826Z",
+    "updated_at": "2026-09-01T11:29:54.826Z",
+    "heading": "Our Story",
+    "body": "We started as a small beauty salon in Kathmandu, Nepal. Our vision was to create a premium salon experience where beauty meets excellence. We believe in using only the finest products and techniques to help our clients look and feel their absolute best. Our team of expert stylists and beauty professionals are passionate about transforming your look and boosting your confidence with every visit.",
+    "cta_label": "Learn More",
+    "cta_href": "/about-us",
+    "image": "",
+    "image_url": "/images/salon-artist.webp",
+    "image_alt": "Stylist holding a set of makeup brushes"
+  }
+},
+{
+  "model": "sections.asseenonsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.831Z",
+    "updated_at": "2026-09-01T11:29:54.831Z",
+    "heading": "As seen On",
+    "quote": "The place with its constant excellence, soul, and style",
+    "attribution": "",
+    "cta_label": "Learn More",
+    "cta_href": "/about-us"
+  }
+},
+{
+  "model": "sections.followussection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.834Z",
+    "updated_at": "2026-09-01T11:29:54.834Z",
+    "heading": "Follow Us",
+    "body": "Don’t miss promotions, follow us for the latest news"
+  }
+},
+{
+  "model": "sections.footersection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.836Z",
+    "updated_at": "2026-09-01T11:29:54.836Z",
+    "heading_line1": "TIME",
+    "heading_line2": "TO",
+    "heading_line3": "SHINE",
+    "contact_heading": "Contact Us",
+    "contact_body": "Don’t miss promotions, follow us for the latest news",
+    "email": "info@beautysalon.com",
+    "phone": "070 9485 7568",
+    "cta_label": "Book a seat",
+    "cta_href": "/services"
+  }
+},
+{
+  "model": "sections.aboutsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:37.890Z",
+    "updated_at": "2026-09-01T11:29:37.890Z",
+    "established_year": 2018,
+    "hero_title": "Beauty Salon Experience",
+    "hero_date": "In Kathmandu since 2018",
+    "hero_scroll_prompt": "Scroll to Explore Our Salon",
+    "hero_image": "",
+    "hero_image_url": "",
+    "eyebrow": "About Our Salon",
+    "heading_line_1": "More Than",
+    "heading_line_2": "Just A Salon.",
+    "intro_body": "Our Salon provides a unique way to engage with our beauty community through personalized experiences. Located in the heart of Kathmandu, we have been transforming lives for over {years} years with our commitment to exceptional beauty services and personalized styling solutions. Our state-of-the-art facility combines modern techniques with expert guidance from 6+ certified stylists who are passionate about helping you achieve your beauty goals. Open Sunday through Friday from 10:00 AM to 8:00 PM, we offer flexible hours to fit your schedule. With a supportive community of 500+ happy clients, we offer more than just a beauty service - we provide a complete beauty experience designed to unlock your true confidence.",
+    "team_heading": "Meet Our Team",
+    "team_body": "Our certified beauty professionals are passionate about helping you look and feel your best. With years of experience and specialized training in the latest beauty trends and techniques, they provide personalized styling and treatments tailored to your unique needs.",
+    "cta_heading_lead": "Ready to",
+    "cta_heading_accent": "Book Your Appointment?",
+    "cta_body": "Join our community and experience what beauty excellence feels like. No commitments, no pressure - just stunning results.",
+    "cta_primary_label": "Contact Us",
+    "cta_primary_href": "/contact",
+    "cta_secondary_label": "View Membership",
+    "cta_secondary_href": "/#membership",
+    "instagram_handle": "@beautysalon_kathmandu"
+  }
+},
+{
+  "model": "sections.aboutcolumn",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "heading": "Our Facilities",
+    "body": ""
+  }
+},
+{
+  "model": "sections.aboutcolumn",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "heading": "Why Choose Us",
+    "body": ""
+  }
+},
+{
+  "model": "sections.aboutcolumn",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "heading": "Mission",
+    "body": "Our purpose is to pass on empowering beauty knowledge and styling guidance in order to have a positive impact on the confidence and self-expression of everyone we work with.\n\nTo provide a personalized beauty and styling service that unlocks every individual's true confidence so they can express their unique style and achieve their desired look."
+  }
+},
+{
+  "model": "sections.aboutcolumn",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "heading": "Story",
+    "body": "Our main focus at our Salon is personalized beauty services because of the proven benefits. With an emphasis on individual style, quality products and expert techniques, our personalized approach ensures that every client receives treatments tailored specifically to their unique needs and preferences."
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "column": 1,
+    "text": "Premium hair styling stations"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "column": 1,
+    "text": "Professional makeup area"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "column": 1,
+    "text": "Spa and treatment rooms"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "column": 1,
+    "text": "Professional styling consultation"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 5,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "column": 2,
+    "text": "Located in the heart of Kathmandu"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 6,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "column": 2,
+    "text": "Welcoming beauty community"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 7,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "column": 2,
+    "text": "Flexible membership options"
+  }
+},
+{
+  "model": "sections.aboutcolumnitem",
+  "pk": 8,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "column": 2,
+    "text": "Clean and well-maintained facility"
+  }
+},
+{
+  "model": "sections.aboutstat",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "value": "{years}+",
+    "label": "Years in Beauty Industry"
+  }
+},
+{
+  "model": "sections.aboutstat",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "value": "500+",
+    "label": "Happy Clients"
+  }
+},
+{
+  "model": "sections.aboutstat",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "value": "6+",
+    "label": "Expert Stylists"
+  }
+},
+{
+  "model": "sections.aboutstat",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "value": "Sun-Fri",
+    "label": "10:00 AM - 8:00 PM"
+  }
+},
+{
+  "model": "sections.teammember",
+  "pk": 1,
+  "fields": {
+    "order": 0,
+    "is_published": true,
+    "section": 1,
+    "name": "Bijay Grg",
+    "role": "Senior Stylist",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269634/devis-gym/people/Trainers/BijayGrg.JPG.webp",
+    "facebook_url": "",
+    "twitter_url": "",
+    "youtube_url": ""
+  }
+},
+{
+  "model": "sections.teammember",
+  "pk": 2,
+  "fields": {
+    "order": 1,
+    "is_published": true,
+    "section": 1,
+    "name": "Aditya Grg",
+    "role": "Hair Specialist",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269619/devis-gym/people/Trainers/AdityaGrg.JPG.webp",
+    "facebook_url": "",
+    "twitter_url": "",
+    "youtube_url": ""
+  }
+},
+{
+  "model": "sections.teammember",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "is_published": true,
+    "section": 1,
+    "name": "Barsha Grg",
+    "role": "Makeup Artist",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269630/devis-gym/people/Trainers/BarshaGrg.JPG.webp",
+    "facebook_url": "",
+    "twitter_url": "",
+    "youtube_url": ""
+  }
+},
+{
+  "model": "sections.teammember",
+  "pk": 4,
+  "fields": {
+    "order": 3,
+    "is_published": true,
+    "section": 1,
+    "name": "Abhishek Mishra",
+    "role": "Color Specialist",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269614/devis-gym/people/Trainers/AbhishekMishra.JPG.webp",
+    "facebook_url": "",
+    "twitter_url": "",
+    "youtube_url": ""
+  }
+},
+{
+  "model": "sections.teammember",
+  "pk": 5,
+  "fields": {
+    "order": 4,
+    "is_published": true,
+    "section": 1,
+    "name": "Anup Grg",
+    "role": "Beauty Consultant",
+    "image": "",
+    "image_url": "https://res.cloudinary.com/ufiebboc/image/upload/v1786269624/devis-gym/people/Trainers/AnupGrg.JPG.webp",
+    "facebook_url": "",
+    "twitter_url": "",
+    "youtube_url": ""
+  }
+},
+{
+  "model": "bookings.bookingsection",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.812Z",
+    "updated_at": "2026-09-01T11:29:54.812Z",
+    "page_heading": "Book your seat",
+    "page_intro": "Pick a service and a stylist, tell us when suits you, and we will confirm by phone.",
+    "service_heading": "Choose your service",
+    "barber_heading": "Choose your barber",
+    "details_heading": "Your details",
+    "payment_heading": "Pay with eSewa",
+    "service_step": "Service",
+    "barber_step": "Barber",
+    "details_step": "Details",
+    "payment_step": "Payment",
+    "submit_label": "Submit booking",
+    "success_heading": "Booking request sent",
+    "esewa_qr": "",
+    "esewa_note": "Scan with eSewa, pay, then upload your payment screenshot below.",
+    "deposit_percent": 100,
+    "opens_at": "09:00:00",
+    "closes_at": "19:00:00",
+    "slot_minutes": 30
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.894Z",
+    "updated_at": "2026-09-01T11:29:54.894Z",
+    "order": 0,
+    "is_published": true,
+    "name": "Aashish Shrestha",
+    "role": "Senior stylist",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 2,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.898Z",
+    "updated_at": "2026-09-01T11:29:54.898Z",
+    "order": 1,
+    "is_published": true,
+    "name": "Bina Gurung",
+    "role": "Colour specialist",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+},
+{
+  "model": "bookings.barber",
+  "pk": 3,
+  "fields": {
+    "created_at": "2026-09-01T11:29:54.900Z",
+    "updated_at": "2026-09-01T11:29:54.900Z",
+    "order": 2,
+    "is_published": true,
+    "name": "Kiran Tamang",
+    "role": "Barber",
+    "photo": "",
+    "bio": "",
+    "working_days": "",
+    "works_from": null,
+    "works_to": null,
+    "is_available": true,
+    "unavailable_note": ""
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 1,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.349Z",
+    "updated_at": "2026-09-01T13:39:37.349Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 2,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.444Z",
+    "updated_at": "2026-09-01T13:39:37.444Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 3,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.542Z",
+    "updated_at": "2026-09-01T13:39:37.542Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 4,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.617Z",
+    "updated_at": "2026-09-01T13:39:37.617Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 5,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.691Z",
+    "updated_at": "2026-09-01T13:39:37.691Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 6,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.776Z",
+    "updated_at": "2026-09-01T13:39:37.776Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 7,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.850Z",
+    "updated_at": "2026-09-01T13:39:37.850Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-01",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 8,
+  "fields": {
+    "created_at": "2026-09-01T13:39:37.924Z",
+    "updated_at": "2026-09-01T13:39:37.924Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 9,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.020Z",
+    "updated_at": "2026-09-01T13:39:38.020Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 10,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.106Z",
+    "updated_at": "2026-09-01T13:39:38.106Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 11,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.190Z",
+    "updated_at": "2026-09-01T13:39:38.190Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 12,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.276Z",
+    "updated_at": "2026-09-01T13:39:38.276Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 13,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.360Z",
+    "updated_at": "2026-09-01T13:39:38.360Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 14,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.434Z",
+    "updated_at": "2026-09-01T13:39:38.434Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-02",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 15,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.508Z",
+    "updated_at": "2026-09-01T13:39:38.508Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 16,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.592Z",
+    "updated_at": "2026-09-01T13:39:38.592Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 17,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.678Z",
+    "updated_at": "2026-09-01T13:39:38.678Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 18,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.763Z",
+    "updated_at": "2026-09-01T13:39:38.763Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 19,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.847Z",
+    "updated_at": "2026-09-01T13:39:38.847Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 20,
+  "fields": {
+    "created_at": "2026-09-01T13:39:38.933Z",
+    "updated_at": "2026-09-01T13:39:38.933Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 21,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.017Z",
+    "updated_at": "2026-09-01T13:39:39.017Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-03",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 22,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.103Z",
+    "updated_at": "2026-09-01T13:39:39.103Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 23,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.188Z",
+    "updated_at": "2026-09-01T13:39:39.188Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 24,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.275Z",
+    "updated_at": "2026-09-01T13:39:39.275Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 25,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.358Z",
+    "updated_at": "2026-09-01T13:39:39.358Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 26,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.443Z",
+    "updated_at": "2026-09-01T13:39:39.443Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 27,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.528Z",
+    "updated_at": "2026-09-01T13:39:39.528Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 28,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.614Z",
+    "updated_at": "2026-09-01T13:39:39.614Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-04",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 29,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.698Z",
+    "updated_at": "2026-09-01T13:39:39.698Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 30,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.783Z",
+    "updated_at": "2026-09-01T13:39:39.783Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 31,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.869Z",
+    "updated_at": "2026-09-01T13:39:39.869Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 32,
+  "fields": {
+    "created_at": "2026-09-01T13:39:39.953Z",
+    "updated_at": "2026-09-01T13:39:39.953Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 33,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.039Z",
+    "updated_at": "2026-09-01T13:39:40.039Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 34,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.123Z",
+    "updated_at": "2026-09-01T13:39:40.123Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 35,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.208Z",
+    "updated_at": "2026-09-01T13:39:40.208Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-05",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 36,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.293Z",
+    "updated_at": "2026-09-01T13:39:40.294Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 37,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.378Z",
+    "updated_at": "2026-09-01T13:39:40.378Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 38,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.484Z",
+    "updated_at": "2026-09-01T13:39:40.484Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 39,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.591Z",
+    "updated_at": "2026-09-01T13:39:40.591Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 40,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.666Z",
+    "updated_at": "2026-09-01T13:39:40.666Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 41,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.751Z",
+    "updated_at": "2026-09-01T13:39:40.751Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 42,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.835Z",
+    "updated_at": "2026-09-01T13:39:40.835Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-06",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 43,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.909Z",
+    "updated_at": "2026-09-01T13:39:40.909Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 44,
+  "fields": {
+    "created_at": "2026-09-01T13:39:40.986Z",
+    "updated_at": "2026-09-01T13:39:40.986Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 45,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.068Z",
+    "updated_at": "2026-09-01T13:39:41.068Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 46,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.142Z",
+    "updated_at": "2026-09-01T13:39:41.142Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 47,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.217Z",
+    "updated_at": "2026-09-01T13:39:41.217Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 48,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.301Z",
+    "updated_at": "2026-09-01T13:39:41.301Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 49,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.385Z",
+    "updated_at": "2026-09-01T13:39:41.386Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 1,
+    "date": "2026-09-07",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 50,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.459Z",
+    "updated_at": "2026-09-01T13:39:41.459Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 51,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.545Z",
+    "updated_at": "2026-09-01T13:39:41.545Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 52,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.629Z",
+    "updated_at": "2026-09-01T13:39:41.629Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 53,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.714Z",
+    "updated_at": "2026-09-01T13:39:41.714Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 54,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.800Z",
+    "updated_at": "2026-09-01T13:39:41.800Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 55,
+  "fields": {
+    "created_at": "2026-09-01T13:39:41.915Z",
+    "updated_at": "2026-09-01T13:39:41.915Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 56,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.061Z",
+    "updated_at": "2026-09-01T13:39:42.061Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-01",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 57,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.135Z",
+    "updated_at": "2026-09-01T13:39:42.135Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 58,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.209Z",
+    "updated_at": "2026-09-01T13:39:42.209Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 59,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.294Z",
+    "updated_at": "2026-09-01T13:39:42.294Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 60,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.367Z",
+    "updated_at": "2026-09-01T13:39:42.367Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 61,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.441Z",
+    "updated_at": "2026-09-01T13:39:42.441Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 62,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.516Z",
+    "updated_at": "2026-09-01T13:39:42.516Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 63,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.600Z",
+    "updated_at": "2026-09-01T13:39:42.600Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-02",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 64,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.674Z",
+    "updated_at": "2026-09-01T13:39:42.674Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 65,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.759Z",
+    "updated_at": "2026-09-01T13:39:42.759Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 66,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.844Z",
+    "updated_at": "2026-09-01T13:39:42.844Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 67,
+  "fields": {
+    "created_at": "2026-09-01T13:39:42.930Z",
+    "updated_at": "2026-09-01T13:39:42.930Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 68,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.015Z",
+    "updated_at": "2026-09-01T13:39:43.016Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 69,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.190Z",
+    "updated_at": "2026-09-01T13:39:43.190Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 70,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.275Z",
+    "updated_at": "2026-09-01T13:39:43.275Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-03",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 71,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.360Z",
+    "updated_at": "2026-09-01T13:39:43.360Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 72,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.447Z",
+    "updated_at": "2026-09-01T13:39:43.447Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 73,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.531Z",
+    "updated_at": "2026-09-01T13:39:43.531Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 74,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.615Z",
+    "updated_at": "2026-09-01T13:39:43.615Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 75,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.689Z",
+    "updated_at": "2026-09-01T13:39:43.689Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 76,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.764Z",
+    "updated_at": "2026-09-01T13:39:43.764Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 77,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.848Z",
+    "updated_at": "2026-09-01T13:39:43.848Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-04",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 78,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.922Z",
+    "updated_at": "2026-09-01T13:39:43.922Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 79,
+  "fields": {
+    "created_at": "2026-09-01T13:39:43.996Z",
+    "updated_at": "2026-09-01T13:39:43.996Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 80,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.081Z",
+    "updated_at": "2026-09-01T13:39:44.081Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 81,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.155Z",
+    "updated_at": "2026-09-01T13:39:44.155Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 82,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.275Z",
+    "updated_at": "2026-09-01T13:39:44.275Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 83,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.358Z",
+    "updated_at": "2026-09-01T13:39:44.358Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 84,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.444Z",
+    "updated_at": "2026-09-01T13:39:44.444Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-05",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 85,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.528Z",
+    "updated_at": "2026-09-01T13:39:44.528Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 86,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.602Z",
+    "updated_at": "2026-09-01T13:39:44.602Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 87,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.687Z",
+    "updated_at": "2026-09-01T13:39:44.687Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 88,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.772Z",
+    "updated_at": "2026-09-01T13:39:44.772Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 89,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.857Z",
+    "updated_at": "2026-09-01T13:39:44.857Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 90,
+  "fields": {
+    "created_at": "2026-09-01T13:39:44.942Z",
+    "updated_at": "2026-09-01T13:39:44.943Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 91,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.027Z",
+    "updated_at": "2026-09-01T13:39:45.027Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-06",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 92,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.112Z",
+    "updated_at": "2026-09-01T13:39:45.112Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 93,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.190Z",
+    "updated_at": "2026-09-01T13:39:45.190Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 94,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.271Z",
+    "updated_at": "2026-09-01T13:39:45.271Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 95,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.357Z",
+    "updated_at": "2026-09-01T13:39:45.357Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 96,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.442Z",
+    "updated_at": "2026-09-01T13:39:45.442Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 97,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.526Z",
+    "updated_at": "2026-09-01T13:39:45.526Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 98,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.610Z",
+    "updated_at": "2026-09-01T13:39:45.610Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 2,
+    "date": "2026-09-07",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 99,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.685Z",
+    "updated_at": "2026-09-01T13:39:45.685Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 100,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.769Z",
+    "updated_at": "2026-09-01T13:39:45.769Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 101,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.854Z",
+    "updated_at": "2026-09-01T13:39:45.854Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 102,
+  "fields": {
+    "created_at": "2026-09-01T13:39:45.940Z",
+    "updated_at": "2026-09-01T13:39:45.940Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 103,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.025Z",
+    "updated_at": "2026-09-01T13:39:46.025Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 104,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.109Z",
+    "updated_at": "2026-09-01T13:39:46.109Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 105,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.183Z",
+    "updated_at": "2026-09-01T13:39:46.183Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-01",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 106,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.258Z",
+    "updated_at": "2026-09-01T13:39:46.258Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 107,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.416Z",
+    "updated_at": "2026-09-01T13:39:46.416Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 108,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.492Z",
+    "updated_at": "2026-09-01T13:39:46.492Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 109,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.575Z",
+    "updated_at": "2026-09-01T13:39:46.575Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 110,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.660Z",
+    "updated_at": "2026-09-01T13:39:46.660Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 111,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.733Z",
+    "updated_at": "2026-09-01T13:39:46.733Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 112,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.818Z",
+    "updated_at": "2026-09-01T13:39:46.818Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-02",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 113,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.904Z",
+    "updated_at": "2026-09-01T13:39:46.904Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 114,
+  "fields": {
+    "created_at": "2026-09-01T13:39:46.989Z",
+    "updated_at": "2026-09-01T13:39:46.989Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 115,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.075Z",
+    "updated_at": "2026-09-01T13:39:47.075Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 116,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.158Z",
+    "updated_at": "2026-09-01T13:39:47.158Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 117,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.232Z",
+    "updated_at": "2026-09-01T13:39:47.232Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 118,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.317Z",
+    "updated_at": "2026-09-01T13:39:47.317Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 119,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.402Z",
+    "updated_at": "2026-09-01T13:39:47.403Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-03",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 120,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.488Z",
+    "updated_at": "2026-09-01T13:39:47.488Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 121,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.572Z",
+    "updated_at": "2026-09-01T13:39:47.572Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 122,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.646Z",
+    "updated_at": "2026-09-01T13:39:47.646Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 123,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.731Z",
+    "updated_at": "2026-09-01T13:39:47.731Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 124,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.816Z",
+    "updated_at": "2026-09-01T13:39:47.816Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 125,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.901Z",
+    "updated_at": "2026-09-01T13:39:47.901Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 126,
+  "fields": {
+    "created_at": "2026-09-01T13:39:47.987Z",
+    "updated_at": "2026-09-01T13:39:47.987Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-04",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 127,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.072Z",
+    "updated_at": "2026-09-01T13:39:48.072Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 128,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.156Z",
+    "updated_at": "2026-09-01T13:39:48.156Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 129,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.230Z",
+    "updated_at": "2026-09-01T13:39:48.230Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 130,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.305Z",
+    "updated_at": "2026-09-01T13:39:48.305Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 131,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.388Z",
+    "updated_at": "2026-09-01T13:39:48.389Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 132,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.463Z",
+    "updated_at": "2026-09-01T13:39:48.463Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 133,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.538Z",
+    "updated_at": "2026-09-01T13:39:48.538Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-05",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 134,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.621Z",
+    "updated_at": "2026-09-01T13:39:48.621Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 135,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.752Z",
+    "updated_at": "2026-09-01T13:39:48.752Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 136,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.836Z",
+    "updated_at": "2026-09-01T13:39:48.836Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 137,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.920Z",
+    "updated_at": "2026-09-01T13:39:48.920Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 138,
+  "fields": {
+    "created_at": "2026-09-01T13:39:48.995Z",
+    "updated_at": "2026-09-01T13:39:48.995Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 139,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.080Z",
+    "updated_at": "2026-09-01T13:39:49.080Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 140,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.165Z",
+    "updated_at": "2026-09-01T13:39:49.165Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-06",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 141,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.238Z",
+    "updated_at": "2026-09-01T13:39:49.238Z",
+    "order": 0,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "10:00:00",
+    "end_time": "11:00:00",
+    "is_booked": true
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 142,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.312Z",
+    "updated_at": "2026-09-01T13:39:49.312Z",
+    "order": 1,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "11:00:00",
+    "end_time": "12:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 143,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.397Z",
+    "updated_at": "2026-09-01T13:39:49.397Z",
+    "order": 2,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "12:00:00",
+    "end_time": "13:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 144,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.483Z",
+    "updated_at": "2026-09-01T13:39:49.483Z",
+    "order": 3,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "14:00:00",
+    "end_time": "15:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 145,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.569Z",
+    "updated_at": "2026-09-01T13:39:49.569Z",
+    "order": 4,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "15:00:00",
+    "end_time": "16:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 146,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.652Z",
+    "updated_at": "2026-09-01T13:39:49.652Z",
+    "order": 5,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "16:00:00",
+    "end_time": "17:00:00",
+    "is_booked": false
+  }
+},
+{
+  "model": "bookings.timeslot",
+  "pk": 147,
+  "fields": {
+    "created_at": "2026-09-01T13:39:49.726Z",
+    "updated_at": "2026-09-01T13:39:49.726Z",
+    "order": 6,
+    "is_published": true,
+    "barber": 3,
+    "date": "2026-09-07",
+    "start_time": "17:00:00",
+    "end_time": "18:00:00",
+    "is_booked": true
+  }
+}
+]

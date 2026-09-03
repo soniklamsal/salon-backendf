@@ -78,7 +78,10 @@ class HeroSection(SingletonModel):
     watermark_image_url = models.CharField(
         max_length=500,
         blank=True,
-        default="/images/choppers-mark.png",
+        # No default mark. This used to seed the old demo's "Choppers" logo onto
+        # the hero cape of every fresh install; the cape now carries nothing
+        # unless a salon uploads its own mark here.
+        default="",
         help_text=IMAGE_URL_HELP,
     )
 

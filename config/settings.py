@@ -210,7 +210,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-gb"
-TIME_ZONE = "Europe/London"
+# Nepal (UTC+5:45) — the salon and its customers are here. USE_TZ stores every
+# timestamp in UTC; this is only the zone the admin renders them in, so it must
+# match what customers see on the site (their browser's local time). Left on the
+# Django default of "Europe/London" it showed booking times ~4h45m early in the
+# admin while the site showed them correctly.
+TIME_ZONE = "Asia/Kathmandu"
 USE_I18N = True
 USE_TZ = True
 

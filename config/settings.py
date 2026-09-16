@@ -242,7 +242,19 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 # The whole request body, not just one file. Multipart uploads are exempt from
 # this in Django, which is why MAX_UPLOAD_BYTES is enforced per-file as well.
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_BYTES + (1024 * 1024)
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
+# How many form fields one request may carry. Django's own default is 1000;
+# this was 200, which is ample for the public forms it was written for -- a
+# booking posts about a dozen fields -- but the setting is global and the admin
+# is not a public form. A changelist with editable columns posts every row on
+# the page at once, and an inline posts every row it renders: the time slot
+# list came to 518 fields and a barber's own page to 795, so ticking "Closed"
+# and pressing Save was answered with a bare 400 and no clue why.
+#
+# 2000 leaves room for the timetable to roughly double before anyone has to
+# think about this again. It is still a bound, and not the one doing the real
+# work: what protects the anonymous booking endpoint is the byte ceiling above
+# and the per-file limit, both of which apply whatever the field count.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 # Guards against decompression bombs: a small file that expands to gigapixels.
 MAX_UPLOAD_PIXELS = int(env("MAX_UPLOAD_PIXELS", str(50_000_000)))
 

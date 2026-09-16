@@ -510,40 +510,41 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
 
     @admin.display(description="Visit", ordering="scheduled_date")
     def visit(self, obj):
-        """When the customer has been told to come in.
+        """When the customer is coming in.
 
-        Blank until someone sets it, which is the state worth spotting from
-        the changelist — an approved booking with no time is a customer who
-        has paid and has not been told when to turn up.
+        The slot they picked in the booking form is that time -- the salon does
+        not set one separately for most bookings. It names a weekday rather
+        than a date, so this reads "Wed 16:00" and the calendar date is settled
+        on approval, in `scheduled_date`.
 
-        The requested slot is deliberately not what this shows. Slots became a
-        weekly timetable, so one names a day and a time and no date at all:
-        printing "Sunday 9:00 am" in a column headed "Visit" would read as a
-        settled appointment, and — worse — would fill the column for every
-        booking, which is exactly what stops staff spotting the ones nobody has
-        scheduled. It appears only alongside "not set", as the request it is.
+        A date set by hand wins where there is one: staff move a booking by
+        filling that in, and it would be no use if the column went on showing
+        the day originally asked for. Blank means neither exists, which is the
+        state worth spotting from the changelist -- an approved booking with no
+        time is a customer who has paid and has not been told when to turn up.
         """
         date = obj.scheduled_date or obj.preferred_date
         time = obj.scheduled_time or obj.preferred_time
 
-        if not date and not time:
-            if obj.time_slot:
-                return format_html(
-                    '<span style="color:#c0392b">— not set — '
-                    '<small>(asked for {})</small></span>',
-                    f"{obj.time_slot.weekday_label} {obj.time_slot.time_label}",
+        if date or time:
+            when = " ".join(
+                part
+                for part in (
+                    date.strftime("%d %b") if date else "",
+                    time.strftime("%H:%M") if time else "",
                 )
-            return format_html('<span style="color:#c0392b">— not set —</span>')
-
-        when = " ".join(
-            part
-            for part in (
-                date.strftime("%d %b") if date else "",
-                time.strftime("%H:%M") if time else "",
+                if part
             )
-            if part
-        )
-        return format_html("<b>{}</b>", when)
+            return format_html("<b>{}</b>", when)
+
+        if obj.time_slot:
+            slot = obj.time_slot
+            return format_html(
+                "<b>{}</b>",
+                f"{slot.weekday_label[:3]} {slot.start_time.strftime('%H:%M')}",
+            )
+
+        return format_html('<span style="color:#c0392b">— not set —</span>')
     
     @admin.display(description="Time slot selected by customer")
     def selected_time_display(self, obj):

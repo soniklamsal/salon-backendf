@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from bookings.models import Appointment, ContactMessage
+from bookings.models import Appointment, Barber, ContactMessage, TimeSlot, Weekday
 from common.testing import admin_static_storage
 from core.dashboard import dashboard_stats, pending_bookings
 from sections.models import Service
@@ -36,6 +36,19 @@ class DashboardStatsTests(TestCase):
         }
         payload.update(overrides)
         return Appointment.objects.create(**payload)
+
+    def a_slot(self, weekday=Weekday.SUNDAY):
+        """One slot on the weekly timetable, of the kind a customer picks."""
+        from datetime import time
+
+        barber, _ = Barber.objects.get_or_create(name="Kiran")
+        slot, _ = TimeSlot.objects.get_or_create(
+            barber=barber,
+            weekday=weekday,
+            start_time=time(14, 0),
+            end_time=time(15, 0),
+        )
+        return slot
 
     def test_it_counts_what_is_waiting(self):
         self.booking()
@@ -59,6 +72,16 @@ class DashboardStatsTests(TestCase):
         self.booking(status=Appointment.Status.APPROVED)
         self.assertEqual(dashboard_stats()["timeless"], 1)
 
+    def test_a_booking_holding_a_slot_has_a_visit_time(self):
+        """The slot the customer picked in the form is the visit time.
+
+        The salon does not set one separately for most bookings, so counting a
+        booking with a slot as timeless flagged every approved booking on the
+        site as a problem and made the tile useless.
+        """
+        self.booking(status=Appointment.Status.APPROVED, time_slot=self.a_slot())
+        self.assertEqual(dashboard_stats()["timeless"], 0)
+
     def test_a_scheduled_booking_is_not_counted_as_timeless(self):
         from django.utils import timezone
 
@@ -68,6 +91,45 @@ class DashboardStatsTests(TestCase):
             scheduled_time="10:00",
         )
         self.assertEqual(dashboard_stats()["timeless"], 0)
+
+    def test_a_slot_on_todays_weekday_counts_as_a_visit_today(self):
+        """Slots repeat weekly, so "today" is a weekday match, not a date."""
+        from django.utils import timezone
+
+        today = timezone.localdate()
+        self.booking(
+            status=Appointment.Status.APPROVED,
+            time_slot=self.a_slot(weekday=today.isoweekday() % 7),
+        )
+        self.assertEqual(dashboard_stats()["today"], 1)
+
+    def test_a_slot_on_another_day_is_not_today(self):
+        from django.utils import timezone
+
+        today = timezone.localdate()
+        self.booking(
+            status=Appointment.Status.APPROVED,
+            time_slot=self.a_slot(weekday=(today.isoweekday() + 3) % 7),
+        )
+        self.assertEqual(dashboard_stats()["today"], 0)
+
+    def test_a_date_set_by_hand_beats_the_day_that_was_asked_for(self):
+        """Staff move a booking by filling in the date, and it has to stick.
+
+        Without this the booking would go on counting for the weekday of the
+        slot it was originally booked into, on top of the date it was moved to.
+        """
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        today = timezone.localdate()
+        self.booking(
+            status=Appointment.Status.APPROVED,
+            time_slot=self.a_slot(weekday=today.isoweekday() % 7),
+            scheduled_date=today + timedelta(days=1),
+        )
+        self.assertEqual(dashboard_stats()["today"], 0)
 
     def test_the_numbers_cost_two_queries(self):
         """So adding a tile is a visible cost rather than a quiet N+1."""

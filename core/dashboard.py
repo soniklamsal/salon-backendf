@@ -45,17 +45,33 @@ def dashboard_stats():
 
     today = timezone.localdate()
 
-    # When a booking happens is `scheduled_date`, the date the salon sets when
-    # it approves. `time_slot` cannot answer this any more: slots became a
-    # weekly timetable, so one says "Sunday, 10am" without saying which Sunday.
-    # Matching a slot's weekday against today would count every Sunday booking
-    # ever made as being in today, every Sunday, forever.
-    booked_for_today = Q(scheduled_date=today)
-    # Approved with no date agreed -- told yes, not told when. Holding a weekly
-    # slot does not take a booking out of this count: the slot is the day the
-    # customer asked for, not a date anyone has confirmed back to them, and
-    # these are exactly the people the tile exists to surface.
-    has_no_time = Q(scheduled_date__isnull=True, scheduled_time__isnull=True)
+    # The customer picks a slot in the booking form and that is the visit
+    # time. The salon does not set one separately for most bookings, so a
+    # booking holding a slot has been told when to come in -- it is only the
+    # date that waits on approval. `scheduled_date` and `scheduled_time` stay
+    # in both counts for bookings made before slots existed, and for the ones
+    # staff move by hand afterwards, which take precedence when set.
+    #
+    # A slot names a weekday rather than a date, so "today" matches on the day
+    # of the week it falls on. `isoweekday()` counts Monday as 1 and Sunday as
+    # 7; the salon's week starts on Sunday, so 7 wraps to 0 -- the same
+    # conversion `Weekday.from_date` makes.
+    todays_weekday = today.isoweekday() % 7
+    booked_for_today = Q(scheduled_date=today) | Q(
+        # Only where staff have not overridden it, so a booking moved to
+        # another date stops counting for the day it was originally asked for.
+        scheduled_date__isnull=True,
+        time_slot__weekday=todays_weekday,
+    )
+    # Nothing to go on at all: no slot the customer chose, and no date or time
+    # the salon set. That is the state the tile exists to surface -- someone
+    # told yes who has not been told when.
+    has_no_time = Q(
+        time_slot__isnull=True,
+        scheduled_date__isnull=True,
+        scheduled_time__isnull=True,
+    )
+
 
     counts = Appointment.objects.aggregate(
         pending=Count("pk", filter=Q(status=status.PENDING)),

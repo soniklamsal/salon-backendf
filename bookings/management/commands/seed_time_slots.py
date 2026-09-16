@@ -196,6 +196,10 @@ class Command(BaseCommand):
         # Where real bookings point, remembered before anything is deleted.
         # `Appointment.time_slot` is ON DELETE SET NULL, so a reset would
         # otherwise blank the slot on a customer's booking without a word.
+        #
+        # Narrowed to the slots this run will actually delete: a booking on a
+        # barber or a day outside the run keeps its slot, and moving it to the
+        # "nearest" time would be rewriting an appointment nobody touched.
         links = {}
         if options["reset"]:
             links = {
@@ -205,7 +209,9 @@ class Command(BaseCommand):
                     appointment.time_slot.start_time,
                 )
                 for appointment in Appointment.objects.filter(
-                    time_slot__isnull=False
+                    time_slot__isnull=False,
+                    time_slot__barber__in=barbers,
+                    time_slot__weekday__in=days,
                 ).select_related("time_slot")
             }
             removed, _ = TimeSlot.objects.filter(
@@ -213,51 +219,82 @@ class Command(BaseCommand):
             ).delete()
             self.stdout.write(f"Removed {removed} existing slot(s).")
 
-        created = kept = 0
+        # Read what is already there once, then write what is missing once.
+        #
+        # This was a `get_or_create` per slot, which is four queries each --
+        # SELECT, SAVEPOINT, INSERT, RELEASE -- or 1,374 for a week of twelve
+        # slots. Against the production database, 300ms away in Oregon, that is
+        # roughly seven minutes of a command sitting still waiting for the
+        # network. The work was never the problem; the round trips were.
+        existing = set(
+            TimeSlot.objects.filter(barber__in=barbers, weekday__in=days).values_list(
+                "barber_id", "weekday", "start_time", "end_time"
+            )
+        )
+
+        missing = []
+        kept = 0
         for barber in barbers:
             for day in days:
                 # `order` follows the time, so the admin's own ordering column
                 # does not have to be filled in by hand for a seeded week.
                 for position, (start, end) in enumerate(ranges):
-                    _, was_created = TimeSlot.objects.get_or_create(
-                        barber=barber,
-                        weekday=day,
-                        start_time=start,
-                        end_time=end,
-                        defaults={"order": position, "is_booked": False},
-                    )
-                    if was_created:
-                        created += 1
-                    else:
+                    if (barber.id, int(day), start, end) in existing:
                         kept += 1
+                        continue
+                    missing.append(
+                        TimeSlot(
+                            barber=barber,
+                            weekday=day,
+                            start_time=start,
+                            end_time=end,
+                            is_booked=False,
+                            order=position,
+                        )
+                    )
+        TimeSlot.objects.bulk_create(missing)
+        created = len(missing)
 
         moved = orphaned = 0
-        for pk, (barber_id, weekday, start) in links.items():
-            candidates = list(
-                TimeSlot.objects.filter(barber_id=barber_id, weekday=weekday)
-            )
-            if not candidates:
-                # That barber no longer offers that day at all. Nothing here is
-                # a better answer than an empty slot, which the admin shows as
-                # "no time slot selected" rather than something untrue.
-                orphaned += 1
-                continue
-            wanted = start.hour * 60 + start.minute
-            nearest = min(
-                candidates,
-                key=lambda slot: abs(
-                    (slot.start_time.hour * 60 + slot.start_time.minute) - wanted
-                ),
-            )
-            Appointment.objects.filter(pk=pk).update(time_slot=nearest)
-            if nearest.start_time != start:
-                moved += 1
-
         if links:
+            # Every slot a booking could be moved onto, in one read rather than
+            # one per booking.
+            by_day = {}
+            for slot in TimeSlot.objects.filter(barber__in=barbers, weekday__in=days):
+                by_day.setdefault((slot.barber_id, slot.weekday), []).append(slot)
+
+            relinked = []
+            for pk, (barber_id, weekday, start) in links.items():
+                candidates = by_day.get((barber_id, weekday))
+                if not candidates:
+                    # That barber no longer offers that day at all. Nothing here
+                    # is a better answer than an empty slot, which the admin
+                    # shows as "no time slot selected" rather than something
+                    # untrue.
+                    orphaned += 1
+                    continue
+                wanted = start.hour * 60 + start.minute
+                nearest = min(
+                    candidates,
+                    key=lambda slot: abs(
+                        (slot.start_time.hour * 60 + slot.start_time.minute) - wanted
+                    ),
+                )
+                relinked.append(Appointment(pk=pk, time_slot=nearest))
+                if nearest.start_time != start:
+                    moved += 1
+
+            if relinked:
+                # `bulk_update` rather than one UPDATE each, and it bypasses
+                # `save()` the same way the previous `.update()` did -- nothing
+                # on the booking should change except which slot it points at.
+                Appointment.objects.bulk_update(relinked, ["time_slot"])
+
             self.stdout.write(
                 f"Kept {len(links)} booking(s) linked "
                 f"({moved} moved to the nearest time, {orphaned} left unset)."
             )
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {created} slot(s): {len(ranges)} a day for "

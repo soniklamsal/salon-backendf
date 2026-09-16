@@ -44,7 +44,7 @@ from api.serializers import (
     SocialLinkSerializer,
     TimeSlotSerializer,
 )
-from bookings.models import Appointment, Barber, BookingSection, GoogleProfile, TimeSlot
+from bookings.models import Appointment, Barber, BookingSection, GoogleProfile, TimeSlot, Weekday
 from common.cache import cached_payload
 from common.google_auth import user_from_request
 from common.throttling import MyBookingsThrottle, ScreenshotThrottle
@@ -210,43 +210,61 @@ class BarberViewSet(ReadOnlyPublishedViewSet):
     
     @action(detail=True, methods=['get'], url_path='time-slots')
     def time_slots(self, request, pk=None):
-        """Get available time slots for a specific barber.
-        
-        GET /api/v1/barbers/{id}/time-slots/?date=2026-09-02
-        
-        Returns all time slots for the barber on the specified date,
-        showing which ones are available and which are booked.
+        """The times this barber offers on one day of the week.
+
+        GET /api/v1/barbers/{id}/time-slots/?weekday=0   (0 = Sunday, 6 = Saturday)
+
+        Slots repeat weekly, so this answers "what does this barber offer on a
+        Sunday", not "what is free on the 21st". Which Sunday the customer
+        actually comes in is settled by the salon when it approves the booking.
+
+        `?date=YYYY-MM-DD` is still accepted, folded onto the weekday it falls
+        on. Nothing sends it any more, but the front end and this API deploy
+        separately: without the fallback, every booking form still running the
+        previous build would break for as long as the rollout took.
         """
         from datetime import datetime
-        
+
         barber = self.get_object()
+        weekday_str = request.query_params.get('weekday')
         date_str = request.query_params.get('date')
-        
-        if not date_str:
+        bad_weekday = {
+            'error': 'weekday must be a whole number from 0 (Sunday) to 6 (Saturday)'
+        }
+
+        if weekday_str is not None:
+            try:
+                weekday = int(weekday_str)
+            except ValueError:
+                return Response(bad_weekday, status=400)
+            if weekday not in Weekday.values:
+                return Response(bad_weekday, status=400)
+        elif date_str:
+            try:
+                parsed = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid date format. Use YYYY-MM-DD'
+                }, status=400)
+            weekday = int(Weekday.from_date(parsed))
+        else:
             return Response({
-                'error': 'date parameter is required (format: YYYY-MM-DD)'
+                'error': 'weekday parameter is required (0 = Sunday, 6 = Saturday)'
             }, status=400)
-        
-        try:
-            slot_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        except ValueError:
-            return Response({
-                'error': 'Invalid date format. Use YYYY-MM-DD'
-            }, status=400)
-        
-        # Get all time slots for this barber on this date
+
         slots = TimeSlot.objects.filter(
             barber=barber,
-            date=slot_date,
+            weekday=weekday,
             is_published=True
         ).order_by('start_time', 'order')
-        
+
         serializer = TimeSlotSerializer(slots, many=True, context={'request': request})
-        
+
         return Response({
             'barber_id': barber.id,
             'barber_name': barber.name,
-            'date': date_str,
+            'weekday': weekday,
+            'weekday_label': Weekday(weekday).label,
             'slots': serializer.data
         })
 

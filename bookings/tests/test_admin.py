@@ -66,12 +66,14 @@ class ApprovalActionTests(TestCase):
 
     def a_slot(self):
         """One bookable slot, of the kind a customer picks in the form."""
-        from datetime import date, time
+        from datetime import time
+
+        from bookings.models import Weekday
 
         barber = Barber.objects.create(name="Kiran")
         return TimeSlot.objects.create(
             barber=barber,
-            date=date(2026, 9, 1),
+            weekday=Weekday.TUESDAY,
             start_time=time(14, 0),
             end_time=time(15, 0),
         )
@@ -175,7 +177,7 @@ class ApprovalActionTests(TestCase):
         ).content.decode()
 
         self.assertIn(slot.time_label, body)
-        self.assertIn(slot.date.strftime("%A, %B %d, %Y"), body)
+        self.assertIn(slot.weekday_label, body)
 
     def test_the_message_reports_what_was_skipped(self):
         approved = Appointment.objects.create(name="Ready")

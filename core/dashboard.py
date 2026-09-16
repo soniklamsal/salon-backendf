@@ -45,18 +45,17 @@ def dashboard_stats():
 
     today = timezone.localdate()
 
-    # When a booking happens is `time_slot.date`: the customer picks the slot
-    # in the booking form and `approve()` no longer copies anything onto
-    # `scheduled_*`. Those two columns are only still consulted for rows made
-    # before slots existed, which is why both halves are needed here -- counting
-    # `scheduled_date` alone reported 0 visits on a day fully booked, and
-    # flagged every approved booking as having no time.
-    booked_for_today = Q(time_slot__date=today) | Q(
-        time_slot__isnull=True, scheduled_date=today
-    )
-    has_no_time = Q(
-        time_slot__isnull=True, scheduled_date__isnull=True, scheduled_time__isnull=True
-    )
+    # When a booking happens is `scheduled_date`, the date the salon sets when
+    # it approves. `time_slot` cannot answer this any more: slots became a
+    # weekly timetable, so one says "Sunday, 10am" without saying which Sunday.
+    # Matching a slot's weekday against today would count every Sunday booking
+    # ever made as being in today, every Sunday, forever.
+    booked_for_today = Q(scheduled_date=today)
+    # Approved with no date agreed -- told yes, not told when. Holding a weekly
+    # slot does not take a booking out of this count: the slot is the day the
+    # customer asked for, not a date anyone has confirmed back to them, and
+    # these are exactly the people the tile exists to surface.
+    has_no_time = Q(scheduled_date__isnull=True, scheduled_time__isnull=True)
 
     counts = Appointment.objects.aggregate(
         pending=Count("pk", filter=Q(status=status.PENDING)),

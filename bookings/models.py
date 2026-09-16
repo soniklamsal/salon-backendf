@@ -246,49 +246,93 @@ class Barber(OrderedModel, TimeStampedModel):
         return self.unavailable_note or "Not available"
 
 
-class TimeSlot(OrderedModel, TimeStampedModel):
-    """A bookable time slot for a barber.
-    
-    Created manually in the admin for each barber. Can be marked as booked
-    or unbooked, allowing the salon to control availability.
+class Weekday(models.IntegerChoices):
+    """The salon's week, numbered from Sunday.
+
+    Deliberately not Python's `date.weekday()`, which starts on Monday: the
+    shop and everyone booking into it reads the week as Sunday first, and the
+    admin's day picker lists it in that order. `from_date` is the one place
+    the two numberings meet, so nothing else has to convert by hand.
     """
-    
+
+    SUNDAY = 0, "Sunday"
+    MONDAY = 1, "Monday"
+    TUESDAY = 2, "Tuesday"
+    WEDNESDAY = 3, "Wednesday"
+    THURSDAY = 4, "Thursday"
+    FRIDAY = 5, "Friday"
+    SATURDAY = 6, "Saturday"
+
+    @classmethod
+    def from_date(cls, value):
+        """The weekday a real date falls on. `isoweekday()` gives Sunday as 7."""
+        return cls(value.isoweekday() % 7)
+
+
+class TimeSlot(OrderedModel, TimeStampedModel):
+    """A bookable time on one weekday, repeating every week.
+
+    Slots are a weekly timetable, not a diary: "Sunday, 10-11am" stands for
+    every Sunday rather than for one date. The salon sets the shape of its
+    week once in the admin and it holds until they change it, which is how the
+    shop actually works -- the same chairs are free at the same times most
+    weeks, and entering them date by date was a standing chore that went stale
+    the moment nobody kept up with it.
+
+    A customer therefore picks a day and a time, not a date. Which Sunday they
+    come in is settled by the salon on approval, in
+    `Appointment.scheduled_date` -- the same place every other timing decision
+    about a booking is already made.
+    """
+
     barber = models.ForeignKey(
         Barber,
         on_delete=models.CASCADE,
-        related_name='time_slots',
-        help_text="Which barber this time slot is for"
+        related_name="time_slots",
+        help_text="Which barber this time slot is for",
     )
-    date = models.DateField(
-        help_text="Which day this slot is available (YYYY-MM-DD)"
+    weekday = models.PositiveSmallIntegerField(
+        choices=Weekday.choices,
+        default=Weekday.SUNDAY,
+        help_text="Which day of the week this slot repeats on",
     )
-    start_time = models.TimeField(
-        help_text="Start time of this slot (e.g., 10:00)"
-    )
-    end_time = models.TimeField(
-        help_text="End time of this slot (e.g., 11:00)"
-    )
+    start_time = models.TimeField(help_text="Start time of this slot (e.g., 10:00)")
+    end_time = models.TimeField(help_text="End time of this slot (e.g., 11:00)")
     is_booked = models.BooleanField(
         default=False,
-        help_text="Check to mark this slot as booked (unavailable for customers)"
+        verbose_name="Closed",
+        help_text=(
+            "Tick to take this time off the booking form. It applies to every "
+            "week, not to a single date -- for one day off, untick 'Available "
+            "for bookings' on the barber instead."
+        ),
     )
-    
+
     class Meta(OrderedModel.Meta):
         verbose_name = "Time Slot"
         verbose_name_plural = "Time Slots"
-        ordering = ['barber', 'date', 'start_time', 'order']
-        # Prevent duplicate slots for same barber at same time
+        ordering = ["barber", "weekday", "start_time", "order"]
+        # One row per barber per weekday per time. The constraint this replaces
+        # keyed on a date, which let the same weekly time be entered once per
+        # calendar day without complaint.
         constraints = [
             models.UniqueConstraint(
-                fields=['barber', 'date', 'start_time', 'end_time'],
-                name='unique_barber_date_time_slot'
+                fields=["barber", "weekday", "start_time", "end_time"],
+                name="unique_barber_weekday_time_slot",
             )
         ]
-    
+
     def __str__(self):
-        status = "Booked" if self.is_booked else "Available"
-        return f"{self.barber.name} - {self.date} {self.start_time.strftime('%H:%M')}-{self.end_time.strftime('%H:%M')} ({status})"
-    
+        status = "Closed" if self.is_booked else "Available"
+        start = self.start_time.strftime("%H:%M")
+        end = self.end_time.strftime("%H:%M")
+        return f"{self.barber.name} - {self.weekday_label} {start}-{end} ({status})"
+
+    @property
+    def weekday_label(self) -> str:
+        """The day as a person says it, e.g. "Sunday"."""
+        return Weekday(self.weekday).label
+
     @property
     def time_label(self) -> str:
         """Format time range for display, e.g., '10:00 AM - 11:00 AM'"""

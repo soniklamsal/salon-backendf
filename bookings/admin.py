@@ -144,20 +144,14 @@ def use_time_dropdown(form, field_name, blank_label):
 
 
 class TimeSlotInline(admin.TabularInline):
-    """Manage time slots directly from the Barber admin page."""
-    
+    """The barber's weekly timetable, edited from their own page."""
+
     model = TimeSlot
     extra = 1
-    fields = ('date', 'start_time', 'end_time', 'is_booked', 'order', 'is_published')
-    ordering = ['date', 'start_time', 'order']
+    fields = ("weekday", "start_time", "end_time", "is_booked", "order", "is_published")
+    ordering = ["weekday", "start_time", "order"]
     verbose_name = "Time Slot"
-    verbose_name_plural = "Time Slots (Create bookable time slots here)"
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Show upcoming slots first, then past
-        from django.utils import timezone
-        return qs.filter(date__gte=timezone.now().date()).order_by('date', 'start_time', 'order')
+    verbose_name_plural = "Time Slots (the times this barber offers each week)"
 
 
 class BarberAdminForm(forms.ModelForm):
@@ -263,43 +257,64 @@ class BarberAdmin(AdminAjaxMixin, admin.ModelAdmin):
 
 @admin.register(TimeSlot)
 class TimeSlotAdmin(admin.ModelAdmin):
-    """Standalone admin for managing all time slots across all barbers."""
-    
-    list_display = ('barber', 'date', 'time_range', 'booking_status', 'is_booked', 'is_published', 'order')
-    list_filter = ('barber', 'date', 'is_booked', 'is_published')
-    search_fields = ('barber__name',)
-    list_editable = ('is_booked', 'is_published', 'order')
-    date_hierarchy = 'date'
-    ordering = ['date', 'start_time']
-    
-    fieldsets = (
-        ('Time Slot Details', {
-            'fields': ('barber', 'date', 'start_time', 'end_time')
-        }),
-        ('Availability', {
-            'fields': ('is_booked',),
-            'description': 'Check "Is booked" to mark this slot as unavailable for customer booking.'
-        }),
-        ('Placement', {
-            'fields': ('is_published', 'order')
-        }),
+    """The whole weekly timetable, across every barber."""
+
+    list_display = (
+        "barber",
+        "weekday",
+        "time_range",
+        "booking_status",
+        "is_booked",
+        "is_published",
+        "order",
     )
-    
+    # Day first: setting up a week is done one day at a time, and this filter
+    # is how staff narrow to "Sunday" before adding to it.
+    list_filter = ("weekday", "barber", "is_booked", "is_published")
+    search_fields = ("barber__name",)
+    list_editable = ("is_booked", "is_published", "order")
+    # `date_hierarchy` went with the date column -- a weekly timetable has no
+    # calendar to drill into.
+    ordering = ["barber", "weekday", "start_time"]
+
+    fieldsets = (
+        (
+            "Time Slot Details",
+            {
+                "fields": ("barber", "weekday", "start_time", "end_time"),
+                "description": (
+                    "The slot repeats on this weekday every week. Customers "
+                    "pick a day and a time; you set the actual date when you "
+                    "approve the booking."
+                ),
+            },
+        ),
+        (
+            "Availability",
+            {
+                "fields": ("is_booked",),
+                "description": (
+                    "Tick Closed to take this time off the booking form. It "
+                    "applies to every week, not to one date."
+                ),
+            },
+        ),
+        ("Placement", {"fields": ("is_published", "order")}),
+    )
+
     @admin.display(description="Time Range")
     def time_range(self, obj):
         return obj.time_label
-    
+
     @admin.display(description="Status")
     def booking_status(self, obj):
         if obj.is_booked:
-            return format_html('<span style="color:#c0392b;font-weight:bold">● Booked</span>')
-        return format_html('<span style="color:#1b5e20;font-weight:bold">● Available</span>')
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Show upcoming slots first
-        from django.utils import timezone
-        return qs.filter(date__gte=timezone.now().date())
+            return format_html(
+                '<span style="color:#c0392b;font-weight:bold">● Closed</span>'
+            )
+        return format_html(
+            '<span style="color:#1b5e20;font-weight:bold">● Available</span>'
+        )
 
 
 class AppointmentAdminForm(forms.ModelForm):
@@ -500,18 +515,24 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         Blank until someone sets it, which is the state worth spotting from
         the changelist — an approved booking with no time is a customer who
         has paid and has not been told when to turn up.
+
+        The requested slot is deliberately not what this shows. Slots became a
+        weekly timetable, so one names a day and a time and no date at all:
+        printing "Sunday 9:00 am" in a column headed "Visit" would read as a
+        settled appointment, and — worse — would fill the column for every
+        booking, which is exactly what stops staff spotting the ones nobody has
+        scheduled. It appears only alongside "not set", as the request it is.
         """
-        # Show the selected time slot if available
-        if obj.time_slot:
-            return format_html(
-                "<b>{}</b>",
-                f"{obj.time_slot.date.strftime('%d %b')} {obj.time_slot.time_label}"
-            )
-        
-        # Fallback to old scheduled/preferred fields for legacy bookings
         date = obj.scheduled_date or obj.preferred_date
         time = obj.scheduled_time or obj.preferred_time
+
         if not date and not time:
+            if obj.time_slot:
+                return format_html(
+                    '<span style="color:#c0392b">— not set — '
+                    '<small>(asked for {})</small></span>',
+                    f"{obj.time_slot.weekday_label} {obj.time_slot.time_label}",
+                )
             return format_html('<span style="color:#c0392b">— not set —</span>')
 
         when = " ".join(
@@ -537,7 +558,7 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
             '{}</div>'
             '<div style="color:#555;font-size:13px">{}</div>'
             '</div>',
-            ts.date.strftime('%A, %B %d, %Y'),  # e.g., "Monday, September 01, 2026"
+            ts.weekday_label,  # e.g., "Monday" -- the slot repeats, so there is no date
             ts.time_label  # e.g., "4:00 pm – 5:00 pm"
         )
 

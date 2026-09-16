@@ -289,15 +289,20 @@ class BarberSerializer(CamelCaseModelSerializer):
 
 
 class TimeSlotSerializer(CamelCaseModelSerializer):
-    """Serializer for time slots - shows availability for booking."""
-    
+    """A slot on the weekly timetable, for the booking form's day picker."""
+
     time_label = serializers.CharField(read_only=True)
-    
+    # Sent alongside the number so the form can print "Sunday" without keeping
+    # its own copy of the week -- the salon's week starts on Sunday, which is
+    # not the order any built-in date formatter would give it.
+    weekday_label = serializers.CharField(read_only=True)
+
     class Meta:
         model = TimeSlot
         fields = [
             'id',
-            'date',
+            'weekday',
+            'weekday_label',
             'start_time',
             'end_time',
             'time_label',
@@ -479,7 +484,12 @@ class MyBookingSerializer(CamelCaseModelSerializer):
         
         ts = obj.time_slot
         return {
-            "date": ts.date.isoformat() if ts.date else None,
+            # The slot repeats weekly, so it carries a day rather than a
+            # date. The date the customer is actually given is
+            # `scheduled_date`, which the salon sets on approval and which
+            # the status page shows in its own right.
+            "weekday": ts.weekday,
+            "weekdayLabel": ts.weekday_label,
             "timeLabel": ts.time_label,  # camelCase for frontend
             "startTime": ts.start_time.isoformat() if ts.start_time else None,
             "endTime": ts.end_time.isoformat() if ts.end_time else None,

@@ -63,15 +63,6 @@ def dashboard_stats():
         scheduled_date__isnull=True,
         time_slot__weekday=todays_weekday,
     )
-    # Nothing to go on at all: no slot the customer chose, and no date or time
-    # the salon set. That is the state the tile exists to surface -- someone
-    # told yes who has not been told when.
-    has_no_time = Q(
-        time_slot__isnull=True,
-        scheduled_date__isnull=True,
-        scheduled_time__isnull=True,
-    )
-
 
     counts = Appointment.objects.aggregate(
         pending=Count("pk", filter=Q(status=status.PENDING)),
@@ -80,9 +71,10 @@ def dashboard_stats():
             filter=booked_for_today
             & Q(status__in=[status.APPROVED, status.COMPLETED]),
         ),
-        # Approved but with no time set -- the customer has been told yes and
-        # has not been told when. Invisible on every other screen.
-        timeless=Count("pk", filter=Q(status=status.APPROVED) & has_no_time),
+        # Approved and still to come: the salon has said yes and the visit
+        # has not been marked done. The number staff actually want at a
+        # glance is how much work is booked in, not how much is malformed.
+        approved=Count("pk", filter=Q(status=status.APPROVED)),
     )
     counts["unhandled"] = ContactMessage.objects.filter(is_handled=False).count()
     return counts
@@ -162,15 +154,15 @@ def dashboard_context():
                 "icon": "fa-envelope",
             },
             {
-                "key": "timeless",
-                "value": stats["timeless"],
-                # Says what is wrong in words as well as in colour, so it does
-                # not depend on telling amber from grey.
-                "label": "Approved with no visit time",
+                "key": "approved",
+                "value": stats["approved"],
+                "label": "Approved",
                 "url": appointments + "?status__exact=approved",
                 "hero": False,
-                "warn": stats["timeless"] > 0,
-                "icon": "fa-exclamation-triangle",
+                # Nothing to warn about: an approved booking is the good
+                # outcome, not a problem waiting to be noticed.
+                "warn": False,
+                "icon": "fa-circle-check",
             },
         ],
         "pending_bookings": pending_bookings(),

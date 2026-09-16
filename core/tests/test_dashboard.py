@@ -67,30 +67,21 @@ class DashboardStatsTests(TestCase):
         )
         self.assertEqual(dashboard_stats()["unhandled"], 0)
 
-    def test_it_counts_approved_bookings_with_no_visit_time(self):
-        """Told yes and not told when — invisible on every other screen."""
-        self.booking(status=Appointment.Status.APPROVED)
-        self.assertEqual(dashboard_stats()["timeless"], 1)
-
-    def test_a_booking_holding_a_slot_has_a_visit_time(self):
-        """The slot the customer picked in the form is the visit time.
-
-        The salon does not set one separately for most bookings, so counting a
-        booking with a slot as timeless flagged every approved booking on the
-        site as a problem and made the tile useless.
-        """
+    def test_it_counts_approved_bookings(self):
+        """How much work is booked in -- the number staff want at a glance."""
         self.booking(status=Appointment.Status.APPROVED, time_slot=self.a_slot())
-        self.assertEqual(dashboard_stats()["timeless"], 0)
+        self.booking(status=Appointment.Status.APPROVED)
+        self.booking()
+        self.booking(status=Appointment.Status.COMPLETED)
+        self.booking(status=Appointment.Status.CANCELLED)
+        self.assertEqual(dashboard_stats()["approved"], 2)
 
-    def test_a_scheduled_booking_is_not_counted_as_timeless(self):
-        from django.utils import timezone
-
-        self.booking(
-            status=Appointment.Status.APPROVED,
-            scheduled_date=timezone.localdate(),
-            scheduled_time="10:00",
-        )
-        self.assertEqual(dashboard_stats()["timeless"], 0)
+    def test_approved_does_not_count_the_other_statuses(self):
+        """Pending is its own tile; completed and cancelled are done with."""
+        self.booking()
+        self.booking(status=Appointment.Status.COMPLETED)
+        self.booking(status=Appointment.Status.CANCELLED)
+        self.assertEqual(dashboard_stats()["approved"], 0)
 
     def test_a_slot_on_todays_weekday_counts_as_a_visit_today(self):
         """Slots repeat weekly, so "today" is a weekday match, not a date."""

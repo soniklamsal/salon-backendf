@@ -40,6 +40,21 @@ def dates_to_weekdays(apps, schema_editor):
         Appointment.objects.filter(time_slot_id=slot.pk).update(time_slot_id=keeper)
         slot.delete()
 
+    # Postgres queues a deferred referential-integrity trigger for each row
+    # deleted above -- `Appointment.time_slot` is ON DELETE SET NULL, and
+    # Django creates its foreign keys DEFERRABLE INITIALLY DEFERRED -- and it
+    # then refuses to ALTER a table that has trigger events pending. Dropping
+    # `date` is the very next thing this migration does, so without draining
+    # the queue here the whole thing dies on:
+    #
+    #     cannot ALTER TABLE "bookings_timeslot" because it has pending
+    #     trigger events
+    #
+    # SQLite has no such queue and never raises it, which is exactly why this
+    # reached the real database before it was caught.
+    if schema_editor.connection.vendor == "postgresql":
+        schema_editor.execute("SET CONSTRAINTS ALL IMMEDIATE")
+
 
 class Migration(migrations.Migration):
 

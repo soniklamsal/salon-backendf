@@ -9,10 +9,15 @@ week, and staff then adjust it in the admin.
     python manage.py seed_time_slots --per-day 5       # five times a day
     python manage.py seed_time_slots --days sun,mon    # only those days
     python manage.py seed_time_slots --barber "Ram"    # only that barber
+    python manage.py seed_time_slots --times 10:00-10:45,10:45-11:30
 
 The times come from the Booking form's opening hours rather than a list kept
 here, so the shop's day is defined in exactly one place -- change `opens_at`,
 `closes_at` or `slot_minutes` in the admin and re-run.
+
+An explicit `--times` list overrides that: a real day is not always a stride,
+and this one breaks for an hour at lunch, which no opening-hours setting can
+describe.
 
 Without `--reset` existing rows are left alone, so a run can never quietly
 undo an edit or reopen a slot the salon closed on purpose.
@@ -63,6 +68,47 @@ def pick_evenly(ranges, count):
     return [ranges[i] for i in indexes]
 
 
+def parse_times(raw):
+    """"10:00-10:45,10:45-11:30" -> the pairs it names.
+
+    An explicit list exists because a real day is not a stride: this salon
+    works in 45-minute slots and stops for an hour at one o'clock, and no
+    combination of opening time, closing time and a fixed step describes that.
+    Where the day *is* a stride, `slot_ranges` still derives it and there is
+    nothing to type.
+
+    Times are 24-hour, so an afternoon slot is 14:00 rather than 2:00 -- a form
+    that cannot be read two ways, which matters when a typo silently books
+    customers in at 2am.
+    """
+    ranges = []
+    for part in raw.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" not in part:
+            raise CommandError(
+                f"'{part}' is not a time range. Write them as 10:00-10:45."
+            )
+        first, last = (half.strip() for half in part.split("-", 1))
+        try:
+            start = datetime.strptime(first, "%H:%M").time()
+            end = datetime.strptime(last, "%H:%M").time()
+        except ValueError:
+            raise CommandError(
+                f"'{part}' is not a time range. Write them as 10:00-10:45, "
+                "in 24-hour time."
+            )
+        if end <= start:
+            raise CommandError(
+                f"'{part}' ends before it starts. In 24-hour time an afternoon "
+                "slot is 14:00-14:45, not 2:00-2:45."
+            )
+        ranges.append((start, end))
+    if not ranges:
+        raise CommandError("--times was given but named no time ranges.")
+    return ranges
+
 def parse_days(raw):
     """"sun,mon" -> the matching weekdays, in the salon's order."""
     if not raw:
@@ -100,6 +146,14 @@ class Command(BaseCommand):
             ),
         )
         parser.add_argument(
+            "--times",
+            default="",
+            help=(
+                "Exact slots, comma separated, e.g. \"10:00-10:45,10:45-11:30\". "
+                "24-hour time. Overrides --per-day and the opening hours."
+            ),
+        )
+        parser.add_argument(
             "--days",
             default="",
             help='Comma separated, e.g. "sun,mon". Default: every day.',
@@ -126,13 +180,18 @@ class Command(BaseCommand):
         if not barbers.exists():
             raise CommandError("No published barbers to seed. Add one first.")
 
-        ranges = list(slot_ranges(section))
-        if not ranges:
-            raise CommandError(
-                "The Booking form's opening hours produce no slots. Check "
-                "opens_at, closes_at and slot_minutes in the admin."
-            )
-        ranges = pick_evenly(ranges, options["per_day"])
+        if options["times"]:
+            # An explicit list is the whole timetable; the opening hours and
+            # --per-day describe a different way of arriving at one.
+            ranges = parse_times(options["times"])
+        else:
+            ranges = list(slot_ranges(section))
+            if not ranges:
+                raise CommandError(
+                    "The Booking form's opening hours produce no slots. Check "
+                    "opens_at, closes_at and slot_minutes in the admin."
+                )
+            ranges = pick_evenly(ranges, options["per_day"])
 
         # Where real bookings point, remembered before anything is deleted.
         # `Appointment.time_slot` is ON DELETE SET NULL, so a reset would

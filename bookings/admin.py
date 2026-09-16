@@ -579,6 +579,15 @@ class AppointmentAdmin(AdminAjaxMixin, admin.ModelAdmin):
         """
         if not obj.payment_screenshot:
             return "— nothing uploaded —"
+        if not obj.reference:
+            # The booking has never been saved, so it has no reference, and the
+            # authorising endpoint is keyed on one. Staff reach this by adding a
+            # booking by hand, attaching the screenshot and getting any field
+            # wrong: the form comes back with the file bound to an unsaved
+            # instance, and reversing the URL with an empty reference raised
+            # NoReverseMatch — a 500 in place of the validation errors they
+            # needed to read.
+            return "— appears once the booking is saved —"
         url = reverse("payment-screenshot", kwargs={"reference": obj.reference})
         return format_html(
             '<a href="{0}" target="_blank" rel="noopener">'

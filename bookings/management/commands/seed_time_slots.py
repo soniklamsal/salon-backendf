@@ -23,7 +23,7 @@ from datetime import date, datetime, timedelta
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from bookings.models import Barber, BookingSection, TimeSlot, Weekday
+from bookings.models import Appointment, Barber, BookingSection, TimeSlot, Weekday
 
 
 def slot_ranges(section):
@@ -134,7 +134,21 @@ class Command(BaseCommand):
             )
         ranges = pick_evenly(ranges, options["per_day"])
 
+        # Where real bookings point, remembered before anything is deleted.
+        # `Appointment.time_slot` is ON DELETE SET NULL, so a reset would
+        # otherwise blank the slot on a customer's booking without a word.
+        links = {}
         if options["reset"]:
+            links = {
+                appointment.pk: (
+                    appointment.time_slot.barber_id,
+                    appointment.time_slot.weekday,
+                    appointment.time_slot.start_time,
+                )
+                for appointment in Appointment.objects.filter(
+                    time_slot__isnull=False
+                ).select_related("time_slot")
+            }
             removed, _ = TimeSlot.objects.filter(
                 barber__in=barbers, weekday__in=days
             ).delete()
@@ -158,6 +172,33 @@ class Command(BaseCommand):
                     else:
                         kept += 1
 
+        moved = orphaned = 0
+        for pk, (barber_id, weekday, start) in links.items():
+            candidates = list(
+                TimeSlot.objects.filter(barber_id=barber_id, weekday=weekday)
+            )
+            if not candidates:
+                # That barber no longer offers that day at all. Nothing here is
+                # a better answer than an empty slot, which the admin shows as
+                # "no time slot selected" rather than something untrue.
+                orphaned += 1
+                continue
+            wanted = start.hour * 60 + start.minute
+            nearest = min(
+                candidates,
+                key=lambda slot: abs(
+                    (slot.start_time.hour * 60 + slot.start_time.minute) - wanted
+                ),
+            )
+            Appointment.objects.filter(pk=pk).update(time_slot=nearest)
+            if nearest.start_time != start:
+                moved += 1
+
+        if links:
+            self.stdout.write(
+                f"Kept {len(links)} booking(s) linked "
+                f"({moved} moved to the nearest time, {orphaned} left unset)."
+            )
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {created} slot(s): {len(ranges)} a day for "
